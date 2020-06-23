@@ -21,18 +21,7 @@
 </style>
 
 <script>
- import { onMount } from 'svelte';
-
  import Steps from '../components/Steps.svelte';
-
- let hasTriggers = false;
-
- onMount(async () => {
-   if ("showTrigger" in Notification.prototype) {
-     /* Notification Triggers supported */
-     hasTriggers = true;
-   }
- })
 </script>
 
 <svelte:head>
@@ -41,11 +30,4 @@
 
 <h1>Crusty</h1>
 
-{#if hasTriggers}
-  <Steps></Steps>
-{:else}
-  <p>
-    Scheduled notifications not supported in your browser, so we won't
-    be able to notify you when you need to take the next step.
-  </p>
-{/if}
+<Steps></Steps>

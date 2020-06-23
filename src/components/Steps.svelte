@@ -151,13 +151,18 @@
  };
 
  function withLocalStorage(key, defaultValue, serialization) {
-   // TODO: parse JSON?
-   const localStorageValue = localStorage[key];
-   const initialValue = localStorageValue != null ? serialization.deserialize(localStorageValue) : defaultValue;
-   const v = writable(initialValue);
-   v.subscribe($v => {
-     localStorage[key] = $v != null ? serialization.serialize($v) : $v;
+   const v = writable(defaultValue);
+
+   onMount(() => {
+     // TODO: parse JSON?
+     const localStorageValue = localStorage[key];
+     const initialValue = localStorageValue != null ? serialization.deserialize(localStorageValue) : defaultValue;
+     v.set(initialValue);
+     v.subscribe($v => {
+       localStorage[key] = $v != null ? serialization.serialize($v) : $v;
+     });
    });
+
    return v;
  }
 
@@ -338,6 +343,18 @@
           ($progress[step.id].startWaitTime &&
            !isReady($progress[step.id].startWaitTime, step.duration));
  }
+
+
+ let hasTriggers = false;
+
+ onMount(async () => {
+   if ("showTrigger" in Notification.prototype) {
+     /* Notification Triggers supported */
+     hasTriggers = true;
+   } else {
+     toggleAlarm(false);
+   }
+ })
 </script>
 
 {#if $displayedStep}
@@ -359,15 +376,17 @@
       <!-- TODO: show remaining time before this step (editable) -->
       <!-- TODO: show ETA of last step being done -->
 
-      <div>
-        <label>
-          <input type="checkbox"
-                 bind:checked={$alarmEnabled}
-                       on:input={(ev) => toggleAlarm(ev.target.checked)}
-          >
-          Notify me
-        </label>
-      </div>
+      {#if hasTriggers}
+        <div>
+          <label>
+            <input type="checkbox"
+                   bind:checked={$alarmEnabled}
+                         on:input={(ev) => toggleAlarm(ev.target.checked)}
+            >
+            Notify me
+          </label>
+        </div>
+      {/if}
     </aside>
   {/if}
 
@@ -419,15 +438,22 @@
 {:else}
   <ChooseRecipe recipes={RECIPES} on:chooseRecipe={chooseRecipe}></ChooseRecipe>
 
-  <div>
-    <label>
-      <input type="checkbox"
-             bind:checked={$alarmEnabled}
-                   on:input={(ev) => toggleAlarm(ev.target.checked)}
-      >
-      Notify me
-    </label>
-  </div>
+  {#if hasTriggers}
+    <div>
+      <label>
+        <input type="checkbox"
+               bind:checked={$alarmEnabled}
+                     on:input={(ev) => toggleAlarm(ev.target.checked)}
+        >
+        Notify me
+      </label>
+    </div>
+  {:else}
+    <p>
+      Scheduled notifications not supported in your browser, so we won't
+      be able to notify you when you need to take the next step.
+    </p>
+  {/if}
 
   <footer>
     <div>App made by <a href="https://inso.cc">Sébastien Cevey</a></div>
