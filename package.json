@@ -1,6 +1,6 @@
 {
-  "name": "TODO",
-  "description": "TODO",
+  "name": "crusty",
+  "description": "A timer app for bread baking",
   "version": "0.0.1",
   "scripts": {
     "dev": "sapper dev",
