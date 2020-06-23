@@ -36,10 +36,10 @@
 </script>
 
 <svelte:head>
-  <title>Sourdough Timer</title>
+  <title>Crusty</title>
 </svelte:head>
 
-<h1>Sourdough Timer</h1>
+<h1>Crusty</h1>
 
 {#if hasTriggers}
   <Steps></Steps>
