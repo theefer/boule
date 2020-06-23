@@ -1,46 +1,51 @@
 <style>
-	h1, figure, p {
-		text-align: center;
-		margin: 0 auto;
-	}
+ h1 {
+   text-align: center;
+   margin: 0 auto;
 
-	h1 {
-		font-size: 2.8em;
-		text-transform: uppercase;
-		font-weight: 700;
-		margin: 0 0 0.5em 0;
-	}
+   font-size: 1.8em;
+   text-transform: uppercase;
+   font-weight: 700;
+   margin: 0 0 0.5em 0;
+ }
 
-	figure {
-		margin: 0 0 1em 0;
-	}
+ p {
+   margin: 1em auto;
+ }
 
-	img {
-		width: 100%;
-		max-width: 400px;
-		margin: 0 0 1em 0;
-	}
-
-	p {
-		margin: 1em auto;
-	}
-
-	@media (min-width: 480px) {
-		h1 {
-			font-size: 4em;
-		}
-	}
+ @media (min-width: 480px) {
+   h1 {
+     font-size: 3em;
+   }
+ }
 </style>
 
+<script>
+ import { onMount } from 'svelte';
+
+ import Steps from '../components/Steps.svelte';
+
+ let hasTriggers = false;
+
+ onMount(async () => {
+   if ("showTrigger" in Notification.prototype) {
+     /* Notification Triggers supported */
+     hasTriggers = true;
+   }
+ })
+</script>
+
 <svelte:head>
-	<title>Sapper project template</title>
+  <title>Sourdough Timer</title>
 </svelte:head>
 
-<h1>Great success!</h1>
+<h1>Sourdough Timer</h1>
 
-<figure>
-	<img alt='Success Kid' src='successkid.jpg'>
-	<figcaption>Have fun with Sapper!</figcaption>
-</figure>
-
-<p><strong>Try editing this file (src/routes/index.svelte) to test live reloading.</strong></p>
+{#if hasTriggers}
+  <Steps></Steps>
+{:else}
+  <p>
+    Scheduled notifications not supported in your browser, so we won't
+    be able to notify you when you need to take the next step.
+  </p>
+{/if}
