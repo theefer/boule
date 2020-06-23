@@ -428,6 +428,11 @@
       Notify me
     </label>
   </div>
+
+  <footer>
+    <div>App made by <a href="https://inso.cc">Sébastien Cevey</a></div>
+    <div>Logo made by <a href="http://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon.com</a></div>
+  </footer>
 {/if}
 
 <style>
@@ -506,5 +511,12 @@
    font-weight: bold;
    font-family: monospace;
    font-size: 1.33em;
+ }
+
+ footer {
+   margin-top: 0px;
+   text-align: center;
+   font-size: 11px;
+   color: #bbb;
  }
 </style>
