@@ -1,6 +1,8 @@
 <script>
  import { createEventDispatcher } from 'svelte';
 
+ import Button from '@smui/button';
+
  const dispatch = createEventDispatcher();
 
  export let recipes;
@@ -15,8 +17,22 @@
 <ol>
   {#each recipes as recipe}
     <li>
-      {recipe.name}
-      <input type="button" on:click={() => chooseRecipe(recipe)} value="Start baking">
+      <h2>{recipe.name}</h2>
+      <Button variant="outlined" on:click={() => chooseRecipe(recipe)}>Start baking</Button>
     </li>
-{/each}
+  {/each}
 </ol>
+
+<style>
+ ol, li {
+   margin: unset;
+   padding: unset;
+   list-style-type: none;
+ }
+
+ li {
+   display: flex;
+   justify-content: space-between;
+   margin-top: 20px;
+ }
+</style>

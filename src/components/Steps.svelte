@@ -2,6 +2,10 @@
  import { onMount } from 'svelte';
  import { writable, derived } from 'svelte/store';
 
+ import Button from '@smui/button';
+ import Switch from '@smui/switch';
+ import FormField from '@smui/form-field';
+
  import ChooseRecipe from '../components/ChooseRecipe.svelte';
  import Step2 from '../components/Step2.svelte';
  import Step3 from '../components/Step3.svelte';
@@ -369,7 +373,7 @@
         </div>
 
         <div class="current-wait-actions">
-          <input type="button" on:click={finishWaitOngoingStep} value="Done">
+          <Button variant="unelevated" on:click={finishWaitOngoingStep}>Done</Button>
         </div>
       </div>
 
@@ -426,7 +430,7 @@
   <!-- TODO: iff not already waiting (has startWaitTime in progress) -->
   {#if $displayedStep === $ongoingStep}
     <div class="step-actions">
-      <input type="button" on:click={startWaitOngoingStep} value="Done">
+      <Button variant="unelevated" on:click={startWaitOngoingStep}>Done</Button>
     </div>
   {/if}
 
@@ -439,15 +443,12 @@
   <ChooseRecipe recipes={RECIPES} on:chooseRecipe={chooseRecipe}></ChooseRecipe>
 
   {#if hasTriggers}
-    <div>
-      <label>
-        <input type="checkbox"
-               bind:checked={$alarmEnabled}
-                     on:input={(ev) => toggleAlarm(ev.target.checked)}
-        >
-        Notify me
-      </label>
-    </div>
+    <FormField>
+      <Switch
+        bind:checked={$alarmEnabled}
+                     on:change={(ev) => toggleAlarm(ev.target.checked)}/>
+      <span slot="label">Track progress with notifications</span>
+    </FormField>
   {:else}
     <p>
       Scheduled notifications not supported in your browser, so we won't

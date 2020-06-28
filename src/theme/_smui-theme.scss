@@ -1,0 +1,18 @@
+//
+// MDC Theme
+//
+
+// Svelte Colors!
+$mdc-theme-primary: #c77e3e;
+$mdc-theme-secondary: #e7ce9e;
+// Other Svelte color: #40b3ff
+
+$mdc-theme-background: #fff;
+$mdc-theme-surface: #fff;
+
+$mdc-typography-font-family: Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+    
+
+@import "@material/theme/color-palette";
+@import '@material/theme/variables';
+@import "@material/typography/mdc-typography";
