@@ -427,8 +427,7 @@
     <!-- TODO: more steps -->
   {/if}
 
-  <!-- TODO: iff not already waiting (has startWaitTime in progress) -->
-  {#if $displayedStep === $ongoingStep}
+  {#if $displayedStep === $ongoingStep && isStartedStep($progress, $displayedStep)}
     <div class="step-actions">
       <Button variant="unelevated" on:click={startWaitOngoingStep}>Done</Button>
     </div>
