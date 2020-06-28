@@ -87,6 +87,9 @@ self.addEventListener('fetch', event => {
 
 
 
+self.addEventListener('notificationclose', function(event) {
+    console.log('On notification close: ', event.notification.tag, event.action);
+});
 
 self.addEventListener('notificationclick', function(event) {
     console.log('On notification click: ', event.notification.tag, event.action);
