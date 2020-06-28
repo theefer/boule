@@ -7,12 +7,6 @@
  import FormField from '@smui/form-field';
 
  import ChooseRecipe from '../components/ChooseRecipe.svelte';
- import Step2 from '../components/Step2.svelte';
- import Step3 from '../components/Step3.svelte';
- import Step4 from '../components/Step4.svelte';
- import Step5 from '../components/Step5.svelte';
- import Step6 from '../components/Step6.svelte';
- import Step7 from '../components/Step7.svelte';
 
  import { createScheduledNotification, clearScheduledNotification } from '../utils/schedule';
 
@@ -64,29 +58,28 @@
  let RECIPES = [{
    id: 'pain-de-campagne',
    name: 'Pain de campagne',
-   leavenIngredients: [
-     // TODO: as structured quantities to allow adapting quantities
-     '30g sourdough starter',
-     '15g strong white flour',
-     '15g wholemeal flour',
-     '40ml water at 30°C',
-   ],
-   mainIngredients: [
-     '100g leaven',
-     '500g strong white flour',
-     '400ml water at 30°C',
-   ],
-   // TODO: auto define UI steps from this
    methodSteps: [
      {
        id: 2,
        title: 'Set the leaven',
        duration: range(hours(2), hours(4)),
+       ingredients: [
+         // TODO: as structured quantities to allow adapting quantities
+         '30g sourdough starter',
+         '15g strong white flour',
+         '15g wholemeal flour',
+         '40ml water at 30°C',
+       ],
      },
      {
        id: 3,
        title: 'Mix in the flour and water',
        duration: exact(hours(1)),
+       ingredients: [
+         '100g leaven',
+         '500g strong white flour',
+         '400ml water at 30°C',
+       ],
      },
      {
        id: 4,
@@ -111,13 +104,13 @@
      {
        id: 8,
        title: 'First shaping',
-       duration: exact(minutes(90)),
+       duration: range(minutes(15), minutes(25)),
      },
      // bench rest
      {
        id: 9,
        title: 'Final shaping',
-       duration: exact(minutes(90)),
+       duration: range(hours(1), hours(2)),
      },
      // basket proving
      {
@@ -411,20 +404,16 @@
 
   <h2>{$displayedStep.title}</h2>
 
-  {#if $displayedStepId == 2}
-    <Step2 recipe={$recipe}></Step2>
-  {:else if $displayedStepId == 3}
-    <Step3 recipe={$recipe}></Step3>
-  {:else if $displayedStepId == 4}
-    <Step4></Step4>
-  {:else if $displayedStepId == 5}
-    <Step5></Step5>
-  {:else if $displayedStepId == 6}
-    <Step6></Step6>
-  {:else if $displayedStepId == 7}
-    <Step7></Step7>
-  {:else if $displayedStepId == 8}
-    <!-- TODO: more steps -->
+  {#if $displayedStep.ingredients}
+    <!-- TODO: custom ingredients instruction -->
+    <p>Mix:</p>
+    <ul>
+      {#each $displayedStep.ingredients as ingredient}
+        <li>
+          {ingredient}
+        </li>
+      {/each}
+    </ul>
   {/if}
 
   {#if $displayedStep === $ongoingStep && isStartedStep($progress, $displayedStep)}
