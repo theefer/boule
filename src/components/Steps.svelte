@@ -375,13 +375,12 @@
 
       {#if hasTriggers}
         <div>
-          <label>
-            <input type="checkbox"
-                   bind:checked={$alarmEnabled}
-                         on:input={(ev) => toggleAlarm(ev.target.checked)}
-            >
-            Notify me
-          </label>
+          <FormField>
+            <Switch
+              bind:checked={$alarmEnabled}
+                           on:change={(ev) => toggleAlarm(ev.target.checked)}/>
+            <span slot="label">Track progress with notifications</span>
+          </FormField>
         </div>
       {/if}
     </aside>
@@ -430,19 +429,21 @@
 {:else}
   <ChooseRecipe recipes={RECIPES} on:chooseRecipe={chooseRecipe}></ChooseRecipe>
 
-  {#if hasTriggers}
-    <FormField>
-      <Switch
-        bind:checked={$alarmEnabled}
-                     on:change={(ev) => toggleAlarm(ev.target.checked)}/>
-      <span slot="label">Track progress with notifications</span>
-    </FormField>
-  {:else}
-    <p>
-      Scheduled notifications not supported in your browser, so we won't
-      be able to notify you when you need to take the next step.
-    </p>
-  {/if}
+  <div class="options">
+    {#if hasTriggers}
+      <FormField>
+        <Switch
+          bind:checked={$alarmEnabled}
+                       on:change={(ev) => toggleAlarm(ev.target.checked)}/>
+        <span slot="label">Track progress with notifications</span>
+      </FormField>
+    {:else}
+      <p>
+        Scheduled notifications not supported in your browser, so we won't
+        be able to notify you when you need to take the next step.
+      </p>
+    {/if}
+  </div>
 
   <footer>
     <div>App made by <a href="https://inso.cc">Sébastien Cevey</a></div>
@@ -453,9 +454,9 @@
 <style>
  aside {
    border-left: 10px solid #c77e3e;
-   background-color: #e7ce9e;
+   background-color: #f7f0de;
    padding: 10px;
-   margin-bottom: 10px;
+   margin-bottom: 20px;
  }
 
  nav {
@@ -543,5 +544,9 @@
    text-align: center;
    font-size: 12px;
    color: #bbb;
+ }
+
+ .options {
+   margin-top: 20px;
  }
 </style>
