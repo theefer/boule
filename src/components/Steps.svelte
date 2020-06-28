@@ -435,8 +435,8 @@
 
   <nav>
     <!-- TODO: cleaner real links -->
-    <a href="javascript:void" on:click={viewPrevStep}>&larr; View previous step</a>
-    <a href="javascript:void" on:click={viewNextStep}>View next step &rarr; </a>
+    <button class="button-link" on:click={viewPrevStep}>&larr; View previous step</button>
+    <button class="button-link" on:click={viewNextStep}>View next step &rarr;</button>
   </nav>
 {:else}
   <ChooseRecipe recipes={RECIPES} on:chooseRecipe={chooseRecipe}></ChooseRecipe>
@@ -478,6 +478,16 @@
 
  h2 {
    margin-top: 1em;
+ }
+
+ .button-link {
+   font-family: inherit;
+   color: inherit;
+   background: none;
+   border: none;
+   padding: 0;
+   margin: 0;
+   text-decoration: underline;
  }
 
  .current-wait-main {
@@ -540,7 +550,7 @@
  }
 
  footer {
-   margin-top: 0px;
+   margin-top: 40px;
    text-align: center;
    font-size: 12px;
    color: #bbb;

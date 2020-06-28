@@ -9,10 +9,6 @@
    margin: 0 0 0.5em 0;
  }
 
- p {
-   margin: 1em auto;
- }
-
  @media (min-width: 480px) {
    h1 {
      font-size: 3em;
