@@ -1,4 +1,6 @@
 
+const NOTIFICATION_TAG = 'step';
+
 async function checkNotificationPermissions() {
     let {state} = await navigator.permissions.query({name: 'notifications'});
     if (state === 'prompt') {
@@ -11,49 +13,92 @@ async function checkNotificationPermissions() {
     return true;
 }
 
-export const showNotification = async (tag, title) => {
-    if (! checkNotificationPermissions()) {
+export async function notifyOngoingStep(step) {
+    showNotification(NOTIFICATION_TAG, `Current step: ${step.title}`);
+}
+
+const timeFormat = new Intl.DateTimeFormat('en-GB', {
+    timeStyle: 'short',
+    hourCycle: 'h23',
+});
+
+export async function notifyWait(currentWait) {
+    // TODO: Schedule notifications every minutes to update the timer
+    const nextStepTitle = currentWait.nextStep.title;
+    const endTime = currentWait.endWaitTime;
+
+    const d = new Date();
+    const remainingMillis = endTime - d;
+    const remainingMins = Math.round(remainingMillis / 1000 / 60);
+    const title = `Next step: ${nextStepTitle} at ${timeFormat.format(endTime)}`;
+    const body = `Wait another ${remainingMins} minutes`;
+    createScheduledNotification(NOTIFICATION_TAG, new Date(d), title, {
+        body,
+        silent: true,
+    });
+    // TODO: how to delete once the next one below is triggered with different tag?
+
+    // Schedule notification at the end to vibrate
+    createScheduledNotification(NOTIFICATION_TAG + '-alarm', endTime, title, {
+        body,
+        silent: false,
+    });
+    // TODO: notify every N while after?
+}
+
+export async function clearNotifications() {
+    await clearNotification(NOTIFICATION_TAG);
+}
+
+const showNotification = async (tag, title) => {
+    if (! await checkNotificationPermissions()) {
         return alert('You need to grant notifications permission for this feature to work.');
     }
 
-    const registration = await navigator.serviceWorker.getRegistration();
-    registration.showNotification(title, {
-        tag,
-        /* icon: '../images/touch/chrome-touch-icon-192x192.png', */
-        requireInteraction: true,
-        actions: [
-            // {action: 'view', title: 'View'},
-            {action: 'done', title: 'Done'},
-        ],
+    // Add timeout to avoid issues where the action clicks are not
+    // triggering notificationclick.
+    setTimeout(async () => {
+        const registration = await navigator.serviceWorker.getRegistration();
+        registration.showNotification(title, {
+            tag,
+            requireInteraction: true,
+            actions: [
+                {action: 'done', title: 'Done'},
+            ],
+        });
     });
 };
 
-export const createScheduledNotification = async (tag, title, timestamp) => {
-    if (! checkNotificationPermissions()) {
+const VIBRATE_SEQUENCE = [200, 100, 200, 100, 200, 100, 200];
+
+async function createScheduledNotification(tag, timestamp, title, {body, data, silent, withVibration}) {
+    if (! await checkNotificationPermissions()) {
         return alert('You need to grant notifications permission for this feature to work.');
     }
 
     const registration = await navigator.serviceWorker.getRegistration();
     registration.showNotification(title, {
         tag,
+        body,
+        data,
+        silent,
+        vibrate: silent ? undefined : VIBRATE_SEQUENCE,
         /* icon: '../images/touch/chrome-touch-icon-192x192.png', */
-        vibrate: [200, 100, 200, 100, 200, 100, 200],
         requireInteraction: true,
         showTrigger: new TimestampTrigger(timestamp),
-        /* data: {}, */
         actions: [
-            {action: 'done', title: 'Done'},
+            {action: 'next', title: 'Start next step'},
             {action: 'snooze', title: '10 more min'},
         ],
     });
 };
 
-export const clearScheduledNotification = async (tag) => {
-    const notifications = await listScheduledNotifications(tag);
+const clearNotification = async (tag) => {
+    const notifications = await listNotifications(tag);
     notifications.forEach(notification => notification.close());
 };
 
-export const listScheduledNotifications = async (tag) => {
+const listNotifications = async (tag) => {
     const registration = await navigator.serviceWorker.getRegistration();
     return await registration.getNotifications({
         tag,

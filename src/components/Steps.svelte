@@ -8,7 +8,7 @@
 
  import ChooseRecipe from '../components/ChooseRecipe.svelte';
 
- import { createScheduledNotification, clearScheduledNotification } from '../utils/schedule';
+ import { clearNotifications, notifyOngoingStep, notifyWait } from '../utils/schedule';
 
 
  function range(min, max) {
@@ -163,7 +163,6 @@
    return v;
  }
 
- // TODO: server-side rendering has no localStorage
  const displayedStepId = withLocalStorage('sd:displayedStepId', undefined, NUMBER);
  const recipeId = withLocalStorage('sd:recipeId', undefined, STRING);
  const progress = withLocalStorage('sd:progress', {}, OBJECT);
@@ -195,36 +194,59 @@
    $ongoingStep => $ongoingStep && $ongoingStep.id
  );
 
- const currentWait = derived([ongoingStep, progress], ([$ongoingStep, $progress]) => {
+ const nextStep = derived(
+   [ongoingStepId, methodSteps],
+   ([$ongoingStepId, $methodSteps]) => {
+     const nextIndex = $methodSteps.findIndex(step => step.id === $ongoingStepId) + 1;
+     if (nextIndex < $methodSteps.length) {
+       return $methodSteps[nextIndex];
+     }
+ });
+
+ const currentWait = derived([ongoingStep, nextStep, progress], ([$ongoingStep, $nextStep, $progress]) => {
    const startWaitTime = $ongoingStep && $progress[$ongoingStep.id] && $progress[$ongoingStep.id].startWaitTime;
+   // TODO: keep range if time range
    const endWaitTime = startWaitTime && $ongoingStep && addMinDuration(startWaitTime, $ongoingStep.duration);
    return $ongoingStep && startWaitTime && {
-     step: $ongoingStep.id,
+     step: $ongoingStep,
+     nextStep: $nextStep,
      duration: $ongoingStep.duration,
      startWaitTime,
      endWaitTime,
    };
  });
 
- const currentAlarm = derived(
-   [alarmEnabled, currentWait],
-   ([$alarmEnabled, $currentWait]) => {
-     return $alarmEnabled && $currentWait;
-   }
- );
- 
  onMount(() => {
-   currentAlarm.subscribe($currentAlarm => {
-     if ($currentAlarm) {
-       // TODO: NEXT step!
-       const title = $ongoingStep.title.replace(/^(.)/, letter => letter.toLowerCase());
-       createScheduledNotification('step', `Time to ‘${title}’`, $currentAlarm.endWaitTime);
-     } else {
-       clearScheduledNotification('step');
+   // TODO: handle notification actions
+   navigator.serviceWorker.addEventListener('message', function(event) {
+     console.log('got message', event.data)
+     if (event.data.type === 'notification-action') {
+       if (event.data.action === 'done') {
+         startWaitOngoingStep();
+       } else if (event.data.action === 'next') {
+         // TODO: focus next step
+         finishWaitOngoingStep();
+       } else if (event.data.action === 'snooze') {
+         // TODO: add more wait time
+       }
      }
    });
+
+   derived([ongoingStep, progress, alarmEnabled, currentWait],
+           ([ongoingStep, progress, alarmEnabled, currentWait]) => ({ongoingStep, progress, alarmEnabled, currentWait}))
+     .subscribe(({ongoingStep, progress, alarmEnabled, currentWait}) => {
+       if (alarmEnabled) {
+         if (isStartedStep(progress, ongoingStep)) {
+           notifyOngoingStep(ongoingStep);
+         } else if (isWaitingStep(progress, ongoingStep)) {
+           notifyWait(currentWait);
+         }
+       } else {
+         clearNotifications('step');
+       }
+     });
  });
- 
+
 
  function viewNextStep() {
    displayedStepId.update(s => s + 1);
@@ -275,8 +297,8 @@
      };
    });
  }
- 
- 
+
+
  function firstStep() {
    // TODO: start at 1
    displayedStepId.set(2);
@@ -366,7 +388,7 @@
         </div>
 
         <div class="current-wait-actions">
-          <Button variant="unelevated" on:click={finishWaitOngoingStep}>Done</Button>
+          <Button variant="unelevated" on:click={finishWaitOngoingStep}>Start next step</Button>
         </div>
       </div>
 
@@ -511,7 +533,7 @@
  .step-bullet--started {
    border: 2px solid #c77e3e;
  }
- 
+
  .step-bullet--waiting {
    border: 2px solid #c77e3e;
    /* TODO: pulse instead */

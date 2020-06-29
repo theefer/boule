@@ -74,7 +74,6 @@ self.addEventListener('fetch', event => {
 				} catch(err) {
 					const response = await cache.match(event.request);
 					if (response) return response;
-
 					throw err;
 				}
 			})
@@ -86,24 +85,49 @@ self.addEventListener('fetch', event => {
 
 
 
+// TODO: only postMessage if clients focused?
+function listClients() {
+  return clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true
+  });
+}
 
 self.addEventListener('notificationclose', function(event) {
     console.log('On notification close: ', event.notification.tag, event.action);
 });
 
 self.addEventListener('notificationclick', function(event) {
-    console.log('On notification click: ', event.notification.tag, event.action);
+    console.log('On notification click: ', event.notification && event.notification.tag, event.action);
     event.notification.close();
 
-    if (event.action === 'done' || event.action === 'snooze') {
+    if (event.action === 'done' || event.action === 'snooze' || event.action === 'next') {
+        const promiseChain = listClients()
+              .then((focusedClients) => {
+                  console.log('focused', focusedClients);
+                  if (focusedClients.length > 0) {
+                      focusedClients.forEach(client => {
+                          client.postMessage({
+                              type: 'notification-action',
+                              action: event.action,
+                          });
+                      });
+                  // } else {
+                  //     return self.registration.showNotification('No focused windows', {
+                  //         body: 'Had to show a notification instead of messaging each page.'
+                  //     });
+                  }
+              });
+        console.log('in', promiseChain);
+
+        event.waitUntil(promiseChain);
+
         return;
     }
 
     // This looks to see if the current is already open and
     // focuses if it is
-    event.waitUntil(clients.matchAll({
-        type: "window"
-    }).then(function(clientList) {
+    event.waitUntil(listClients().then(function(clientList) {
         for (var i = 0; i < clientList.length; i++) {
             var client = clientList[i];
             if (client.url == '/' && 'focus' in client)
