@@ -1,8 +1,8 @@
 {
 	"background_color": "#ffffff",
 	"theme_color": "#333333",
-	"name": "Crusty",
-	"short_name": "Crusty",
+	"name": "Boule",
+	"short_name": "Boule",
 	"display": "minimal-ui",
 	"start_url": "/",
 	"icons": [

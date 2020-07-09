@@ -21,9 +21,9 @@
 </script>
 
 <svelte:head>
-  <title>Crusty</title>
+  <title>Boule</title>
 </svelte:head>
 
-<h1>Crusty</h1>
+<h1>Boule</h1>
 
 <Steps></Steps>
