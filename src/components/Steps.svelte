@@ -224,9 +224,9 @@
        if (event.data.action === 'done') {
          startWaitOngoingStep();
        } else if (event.data.action === 'next') {
-         // TODO: focus next step
          finishWaitOngoingStep();
        } else if (event.data.action === 'snooze') {
+         delayWait(minutes(10));
          // TODO: add more wait time
        }
      }
@@ -293,6 +293,23 @@
          ...$progress[$ongoingStepId + 1] || {
          },
          startTime: new Date(),
+       },
+     };
+   });
+
+   // Go to current step
+   displayedStepId.set($ongoingStepId);
+ }
+
+ function delayWait(delayMillis) {
+   progress.update($progress => {
+     return {
+       ...$progress,
+       [$ongoingStepId]: {
+         ...$progress[$ongoingStepId] || {
+         },
+         // TODO: take this into account when computing end time
+         extraDelay: delayMillis,
        },
      };
    });
