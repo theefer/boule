@@ -6,37 +6,12 @@
  import Switch from '@smui/switch';
  import FormField from '@smui/form-field';
 
+ import {RECIPES} from '../content/recipes.js';
+
  import ChooseRecipe from '../components/ChooseRecipe.svelte';
 
  import { clearNotifications, notifyOngoingStep, notifyWait } from '../utils/schedule';
 
-
- function range(min, max) {
-   return {
-     type: 'range',
-     min,
-     max,
-   };
- }
-
- function exact(value) {
-   return {
-     type: 'exact',
-     value,
-   };
- }
-
- function hours(n) {
-   return minutes(n * 60);
- }
-
- function minutes(n) {
-   return seconds(n * 60);
- }
-
- function seconds(n) {
-   return n * 1000;
- }
 
  function getDurationMin(duration) {
    return duration.type === 'range' ? duration.min : duration.value;
@@ -54,78 +29,6 @@
    d.setMilliseconds(d.getMilliseconds() + minDuration);
    return d;
  }
-
- let RECIPES = [{
-   id: 'pain-de-campagne',
-   name: 'Pain de campagne',
-   methodSteps: [
-     {
-       id: 2,
-       title: 'Set the leaven',
-       duration: range(hours(2), hours(4)),
-       ingredients: [
-         // TODO: as structured quantities to allow adapting quantities
-         '30g sourdough starter',
-         '15g strong white flour',
-         '15g wholemeal flour',
-         '40ml water at 30°C',
-       ],
-     },
-     {
-       id: 3,
-       title: 'Mix in the flour and water',
-       duration: exact(hours(1)),
-       ingredients: [
-         '100g leaven',
-         '500g strong white flour',
-         '400ml water at 30°C',
-       ],
-     },
-     {
-       id: 4,
-       title: 'Pinch in the salt',
-       duration: exact(minutes(30)),
-     },
-     {
-       id: 5,
-       title: 'First fold',
-       duration: exact(minutes(30)),
-     },
-     {
-       id: 6,
-       title: 'Second fold',
-       duration: exact(minutes(30)),
-     },
-     {
-       id: 7,
-       title: 'Third fold',
-       duration: exact(minutes(90)),
-     },
-     {
-       id: 8,
-       title: 'First shaping',
-       duration: range(minutes(15), minutes(25)),
-     },
-     // bench rest
-     {
-       id: 9,
-       title: 'Final shaping',
-       duration: range(hours(1), hours(2)),
-     },
-     // basket proving
-     {
-       id: 10,
-       title: 'Cold proving',
-       duration: range(hours(12), hours(36)),
-     },
-     {
-       id: 11,
-       title: 'Baking',
-       // TODO: 2x 20 minutes
-       duration: exact(minutes(40)),
-     },
-   ],
- }];
 
  const NUMBER = {
    deserialize: (s) => Number(s),
