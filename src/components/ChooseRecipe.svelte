@@ -1,24 +1,16 @@
 <script>
- import { createEventDispatcher } from 'svelte';
-
- import Button from '@smui/button';
-
- const dispatch = createEventDispatcher();
+ import {getRecipeLink} from '../utils/routes';
 
  export let recipes;
-
- function chooseRecipe(recipe) {
-   dispatch('chooseRecipe', recipe.id);
- }
 </script>
 
-<!-- TODO: choose slow/fast leaven -->
+<!-- TODO: choose variant: slow/fast leaven (or on next page) -->
 
 <ol>
   {#each recipes as recipe}
     <li>
-      <h2>{recipe.name}</h2>
-      <Button variant="outlined" on:click={() => chooseRecipe(recipe)}>Start baking</Button>
+      <h2><a href="{getRecipeLink(recipe)}">{recipe.name}</a></h2>
+      <!-- TODO: add description or more details -->
     </li>
   {/each}
 </ol>
@@ -34,5 +26,9 @@
    display: flex;
    justify-content: space-between;
    margin-top: 20px;
+ }
+
+ a {
+   text-decoration: none;
  }
 </style>

@@ -1,16 +1,16 @@
 <script>
  import { onMount } from 'svelte';
  import { writable, derived } from 'svelte/store';
+ import { goto } from '@sapper/app';
 
  import Button from '@smui/button';
  import Switch from '@smui/switch';
  import FormField from '@smui/form-field';
 
- import {RECIPES} from '../content/recipes.js';
-
- import ChooseRecipe from '../components/ChooseRecipe.svelte';
-
  import { clearNotifications, notifyOngoingStep, notifyWait } from '../utils/schedule';
+ import { getRecipeStepLink } from '../utils/routes';
+
+ export let recipe;
 
 
  function getDurationMin(duration) {
@@ -66,25 +66,19 @@
    return v;
  }
 
- const displayedStepId = withLocalStorage('sd:displayedStepId', undefined, NUMBER);
- const recipeId = withLocalStorage('sd:recipeId', undefined, STRING);
  // TODO: upon deserialization, parse dates back into date objects
  const progress = withLocalStorage('sd:progress', {}, OBJECT);
  const alarmEnabled = withLocalStorage('sd:alarmEnabled', true, BOOLEAN);
 
- const recipe = derived(recipeId, id => RECIPES.find(r => r.id === id));
+ export let displayedStepId;
 
- const methodSteps = derived(recipe, $recipe => $recipe && $recipe.methodSteps || []);
+ const methodSteps = recipe.methodSteps || [];
 
- const displayedStep = derived(
-   [displayedStepId, methodSteps],
-   ([$displayedStepId, $methodSteps]) =>
-     $methodSteps.find(s => s.id === $displayedStepId)
- );
+ $: displayedStep = methodSteps.find(s => s.id === displayedStepId);
 
  const ongoingStep = derived(
-   [methodSteps, progress], ([$methodSteps, $progress]) => {
-     return $methodSteps.find(step => {
+   [progress], ([$progress]) => {
+     return methodSteps.find(step => {
        return $progress[step.id] &&
               $progress[step.id].startTime &&
               !$progress[step.id].endWaitTime &&
@@ -99,11 +93,11 @@
  );
 
  const nextStep = derived(
-   [ongoingStepId, methodSteps],
-   ([$ongoingStepId, $methodSteps]) => {
-     const nextIndex = $methodSteps.findIndex(step => step.id === $ongoingStepId) + 1;
-     if (nextIndex < $methodSteps.length) {
-       return $methodSteps[nextIndex];
+   [ongoingStepId],
+   ([$ongoingStepId]) => {
+     const nextIndex = methodSteps.findIndex(step => step.id === $ongoingStepId) + 1;
+     if (nextIndex < methodSteps.length) {
+       return methodSteps[nextIndex];
      }
  });
 
@@ -151,17 +145,8 @@
      });
  });
 
-
- function viewNextStep() {
-   displayedStepId.update(s => s + 1);
- }
-
- function viewPrevStep() {
-   displayedStepId.update(s => s - 1);
- }
-
- function displayStep(step) {
-   displayedStepId.set(step.id);
+ function displayStep(stepId) {
+   goto(getStepLink(stepId));
  }
 
  function startWaitOngoingStep() {
@@ -202,7 +187,7 @@
    });
 
    // Go to current step
-   displayedStepId.set($ongoingStepId);
+   displayStep($ongoingStepId);
  }
 
  function delayWait(delayMillis) {
@@ -220,23 +205,13 @@
  }
 
 
- function firstStep() {
-   // TODO: start at 1
-   displayedStepId.set(2);
-
+ function startBaking() {
    progress.set({
-     // TODO: ongoing step?
-     [$displayedStepId]: {
+     // Mark first step as started
+     1: {
        startTime: new Date(),
      },
    });
- }
-
- function chooseRecipe(event) {
-   const id = event.detail;
-   recipeId.set(id);
-
-   firstStep();
  }
 
  function toggleAlarm(enabled) {
@@ -284,6 +259,12 @@
            !isReady($progress[step.id].startWaitTime, step.duration));
  }
 
+ function getStepLink(stepId) {
+   return getRecipeStepLink(recipe, stepId);
+ }
+
+ $: prevStepLink = getStepLink(displayedStepId - 1);
+ $: nextStepLink = getStepLink(displayedStepId + 1);
 
  let hasTriggers = false;
 
@@ -297,102 +278,95 @@
  })
 </script>
 
-{#if $displayedStep}
-  {#if $currentWait}
-    <aside>
-      <div class="current-wait-main">
-        <div class="current-wait-description">
-          <strong>{$ongoingStep.title}</strong>
 
-          <!-- TODO: show time range -->
-          <p>Wait {durationStr($currentWait.duration)} until {formatTime($currentWait.endWaitTime)}</p>
-        </div>
+{#if $currentWait}
+  <aside>
+    <div class="current-wait-main">
+      <div class="current-wait-description">
+        <strong>{$ongoingStep.title}</strong>
 
-        <div class="current-wait-actions">
-          <Button variant="unelevated" on:click={finishWaitOngoingStep}>Start next step</Button>
-        </div>
+        <!-- TODO: show time range -->
+        <p>Wait {durationStr($currentWait.duration)} until {formatTime($currentWait.endWaitTime)}</p>
       </div>
 
-      <!-- TODO: show remaining time before this step (editable) -->
-      <!-- TODO: show ETA of last step being done -->
-
-      {#if hasTriggers}
-        <div>
-          <FormField>
-            <Switch
-              bind:checked={$alarmEnabled}
-                           on:change={(ev) => toggleAlarm(ev.target.checked)}/>
-            <span slot="label">Track progress with notifications</span>
-          </FormField>
-        </div>
-      {/if}
-    </aside>
-  {/if}
-
-  <ol class="step-bullets">
-    {#each $methodSteps as step}
-      <!-- TODO: proper link -->
-      <li class="step-bullet"
-          class:step-bullet--displayed="{step == $displayedStep}"
-          class:step-bullet--started="{isStartedStep($progress, step)}"
-          class:step-bullet--waiting="{isWaitingStep($progress, step)}"
-          class:step-bullet--completed="{isCompletedStep($progress, step)}"
-          class:step-bullet--future="{!isStartedStep($progress, step) && !isWaitingStep($progress, step) && !isCompletedStep($progress, step)}"
-          on:click="{displayStep(step)}"
-      >
-      </li>
-    {/each}
-  </ol>
-
-  <h2>{$displayedStep.title}</h2>
-
-  {#if $displayedStep.ingredients}
-    <!-- TODO: custom ingredients instruction -->
-    <p>Mix:</p>
-    <ul>
-      {#each $displayedStep.ingredients as ingredient}
-        <li>
-          {ingredient}
-        </li>
-      {/each}
-    </ul>
-  {/if}
-
-  {#if $displayedStep === $ongoingStep && isStartedStep($progress, $displayedStep)}
-    <div class="step-actions">
-      <Button variant="unelevated" on:click={startWaitOngoingStep}>Done</Button>
+      <div class="current-wait-actions">
+        <Button variant="unelevated" on:click={finishWaitOngoingStep}>Start next step</Button>
+      </div>
     </div>
-  {/if}
 
-  <nav>
-    <!-- TODO: cleaner real links -->
-    <button class="button-link" on:click={viewPrevStep}>&larr; View previous step</button>
-    <button class="button-link" on:click={viewNextStep}>View next step &rarr;</button>
-  </nav>
-{:else}
-  <ChooseRecipe recipes={RECIPES} on:chooseRecipe={chooseRecipe}></ChooseRecipe>
+    <!-- TODO: show remaining time before this step (editable) -->
+    <!-- TODO: show ETA of last step being done -->
 
-  <div class="options">
     {#if hasTriggers}
-      <FormField>
-        <Switch
-          bind:checked={$alarmEnabled}
-                       on:change={(ev) => toggleAlarm(ev.target.checked)}/>
-        <span slot="label">Track progress with notifications</span>
-      </FormField>
+      <div>
+        <FormField>
+          <Switch
+            bind:checked={$alarmEnabled}
+                         on:change={(ev) => toggleAlarm(ev.target.checked)}/>
+          <span slot="label">Track progress with notifications</span>
+        </FormField>
+      </div>
     {:else}
       <p>
         Scheduled notifications not supported in your browser, so we won't
         be able to notify you when you need to take the next step.
       </p>
     {/if}
-  </div>
-
-  <footer>
-    <div>App made by <a href="https://inso.cc">Sébastien Cevey</a></div>
-    <div>Logo made by <a href="http://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon.com</a></div>
-  </footer>
+  </aside>
 {/if}
+
+<!-- TODO: button to start cooking if not already -->
+
+<ol class="step-bullets">
+  {#each methodSteps as step}
+    <a href="{getStepLink(step.id)}"
+       class="step-bullet"
+       class:step-bullet--displayed="{step == displayedStep}"
+       class:step-bullet--started="{isStartedStep($progress, step)}"
+       class:step-bullet--waiting="{isWaitingStep($progress, step)}"
+       class:step-bullet--completed="{isCompletedStep($progress, step)}"
+       class:step-bullet--future="{!isStartedStep($progress, step) && !isWaitingStep($progress, step) && !isCompletedStep($progress, step)}"
+    >
+    </a>
+  {/each}
+</ol>
+
+<h2>{displayedStep.title}</h2>
+
+{#if displayedStep.ingredients}
+  <!-- TODO: custom ingredients instruction -->
+  <p>Mix:</p>
+  <ul>
+    {#each displayedStep.ingredients as ingredient}
+      <li>
+        {ingredient}
+      </li>
+    {/each}
+  </ul>
+{/if}
+
+{#if displayedStep === $ongoingStep && isStartedStep($progress, displayedStep)}
+  <div class="step-actions">
+    <Button variant="unelevated" on:click={startWaitOngoingStep}>Done</Button>
+  </div>
+{/if}
+
+<nav>
+  {#if prevStepLink}
+    <a href="{prevStepLink}">
+      &larr; View previous step
+    </a>
+  {:else}
+    <span></span>
+  {/if}
+  {#if nextStepLink}
+    <a href="{nextStepLink}">
+      View next step &rarr;
+    </a>
+  {:else}
+    <span></span>
+  {/if}
+</nav>
 
 <style>
  aside {
@@ -411,16 +385,6 @@
 
  h2 {
    margin-top: 1em;
- }
-
- .button-link {
-   font-family: inherit;
-   color: inherit;
-   background: none;
-   border: none;
-   padding: 0;
-   margin: 0;
-   text-decoration: underline;
  }
 
  .current-wait-main {
@@ -444,6 +408,8 @@
  }
 
  .step-bullet {
+   font-size: 0.88em;
+   text-decoration: none;
    display: inline-block;
    width: 8px;
    height: 8px;
@@ -480,16 +446,5 @@
    font-weight: bold;
    font-family: monospace;
    font-size: 1.33em;
- }
-
- footer {
-   margin-top: 40px;
-   text-align: center;
-   font-size: 12px;
-   color: #bbb;
- }
-
- .options {
-   margin-top: 20px;
  }
 </style>

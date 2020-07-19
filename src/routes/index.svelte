@@ -1,5 +1,7 @@
 <script>
- import Steps from '../components/Steps.svelte';
+ import ChooseRecipe from '../components/ChooseRecipe.svelte';
+
+ import {RECIPES} from '../content/recipes';
 </script>
 
-<Steps></Steps>
+<ChooseRecipe recipes={RECIPES}></ChooseRecipe>

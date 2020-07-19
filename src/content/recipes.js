@@ -6,7 +6,7 @@ export const RECIPES = [{
     name: 'Pain de campagne',
     methodSteps: [
         {
-            id: 2,
+            id: 1,
             title: 'Set the leaven',
             duration: range(hours(2), hours(4)),
             ingredients: [
@@ -18,7 +18,7 @@ export const RECIPES = [{
             ],
         },
         {
-            id: 3,
+            id: 2,
             title: 'Mix in the flour and water',
             duration: exact(hours(1)),
             ingredients: [
@@ -28,44 +28,44 @@ export const RECIPES = [{
             ],
         },
         {
-            id: 4,
+            id: 3,
             title: 'Pinch in the salt',
             duration: exact(minutes(30)),
         },
         {
-            id: 5,
+            id: 4,
             title: 'First fold',
             duration: exact(minutes(30)),
         },
         {
-            id: 6,
+            id: 5,
             title: 'Second fold',
             duration: exact(minutes(30)),
         },
         {
-            id: 7,
+            id: 6,
             title: 'Third fold',
             duration: exact(minutes(90)),
         },
         {
-            id: 8,
+            id: 7,
             title: 'First shaping',
             duration: range(minutes(15), minutes(25)),
         },
         // bench rest
         {
-            id: 9,
+            id: 8,
             title: 'Final shaping',
             duration: range(hours(1), hours(2)),
         },
         // basket proving
         {
-            id: 10,
+            id: 9,
             title: 'Cold proving',
             duration: range(hours(12), hours(36)),
         },
         {
-            id: 11,
+            id: 10,
             title: 'Baking',
             // TODO: 2x 20 minutes
             duration: exact(minutes(40)),

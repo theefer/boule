@@ -19,8 +19,7 @@
    margin: 0 auto 10px;
  }
 
- /* TODO: stick to the page bottom */
- footer {
+ aside {
    border-top: 10px solid #c77e3e;
    background-color: #f7f0de;
    max-width: 40em;
@@ -32,6 +31,13 @@
    bottom: 0;
  }
  /* TODO: if present, add bottom margin to main */
+
+ footer {
+   margin-top: 40px;
+   text-align: center;
+   font-size: 12px;
+   color: #bbb;
+ }
 
  .current-label {
    font-size: 0.66em;
@@ -78,11 +84,16 @@
   <slot></slot>
 </main>
 
-<footer>
+<aside>
   <div class="current-label">Currently baking</div>
   <h3>Pain de campagne</h3>
 
   <!-- TODO: more ongoing details -->
 
   <!-- TODO: stop baking -->
+</aside>
+
+<footer>
+  <div>App made by <a href="https://inso.cc">Sébastien Cevey</a></div>
+  <div>Logo made by <a href="http://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon.com</a></div>
 </footer>
