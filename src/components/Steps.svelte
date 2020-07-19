@@ -165,6 +165,7 @@
 
  const displayedStepId = withLocalStorage('sd:displayedStepId', undefined, NUMBER);
  const recipeId = withLocalStorage('sd:recipeId', undefined, STRING);
+ // TODO: upon deserialization, parse dates back into date objects
  const progress = withLocalStorage('sd:progress', {}, OBJECT);
  const alarmEnabled = withLocalStorage('sd:alarmEnabled', true, BOOLEAN);
 
