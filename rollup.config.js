@@ -7,12 +7,15 @@ import svelte from 'rollup-plugin-svelte';
 import babel from '@rollup/plugin-babel';
 import postcss from 'rollup-plugin-postcss';
 import { terser } from 'rollup-plugin-terser';
+import typescript from '@rollup/plugin-typescript';
 import config from 'sapper/config/rollup.js';
+import sveltePreprocess from 'svelte-preprocess';
 import pkg from './package.json';
 
 const mode = process.env.NODE_ENV;
 const dev = mode === 'development';
 const legacy = !!process.env.SAPPER_LEGACY_BUILD;
+const sourcemap = dev ? "inline" : false;
 
 const onwarn = (warning, onwarn) =>
 	(warning.code === 'MISSING_EXPORT' && /'preload'/.test(warning.message)) ||
@@ -59,9 +62,34 @@ const postcssOptions = () => ({
 	],
 });
 
+const preprocess = [
+  // sveltePreprocess({ defaults: {script: 'typescript'} }),
+  // sveltePreprocess(
+  //   {
+  // babel: {
+  //   presets: [
+  //     [
+  //       '@babel/preset-env',
+  //       {
+  //         loose: true,
+  //         // No need for babel to resolve modules
+  //         modules: false,
+  //         targets: {
+  //           // ! Very important. Target es6+
+  //           esmodules: true,
+  //         },
+  //       },
+  //     ],
+  //   ],
+  // },
+  // }
+  // ),
+  sveltePreprocess(),
+];
+
 export default {
 	client: {
-		input: config.client.input(),
+		input: config.client.input().replace(/\.js$/, '.ts'),
 		output: config.client.output(),
 		plugins: [
 			alias(aliases()),
@@ -72,17 +100,19 @@ export default {
 			svelte({
 				dev,
 				hydratable: true,
-				emitCss: true
+				emitCss: true,
+                          preprocess: sveltePreprocess(),
 			}),
 			resolve({
 				browser: true,
 				dedupe,
 			}),
 			commonjs(),
+		  typescript({ sourceMap: dev }),
 			postcss(postcssOptions()),
 
 			legacy && babel({
-				extensions: ['.js', '.mjs', '.html', '.svelte'],
+			  extensions: ['.js', '.mjs', '.html', '.svelte', '.ts'],
 				babelHelpers: 'runtime',
 				exclude: ['node_modules/@babel/**'],
 				presets: [
@@ -108,7 +138,7 @@ export default {
 	},
 
 	server: {
-		input: config.server.input(),
+		input: config.server.input().server.replace(/\.js$/, '.ts'),
 		output: config.server.output(),
 		plugins: [
 			alias(aliases()),
@@ -118,12 +148,14 @@ export default {
 			}),
 			svelte({
 				generate: 'ssr',
-				dev
+                          preprocess: sveltePreprocess(),
+				dev,
 			}),
 			resolve({
 				dedupe,
 			}),
 			commonjs(),
+			typescript({ sourceMap: dev }),
 			postcss(postcssOptions()),
 		],
 		external: Object.keys(pkg.dependencies).concat(
@@ -135,7 +167,7 @@ export default {
 	},
 
 	serviceworker: {
-		input: config.serviceworker.input(),
+		input: config.serviceworker.input().replace(/\.js$/, '.ts'),
 		output: config.serviceworker.output(),
 		plugins: [
 			resolve(),
@@ -144,6 +176,7 @@ export default {
 				'process.env.NODE_ENV': JSON.stringify(mode)
 			}),
 			commonjs(),
+			typescript({ sourceMap: dev }),
 			!dev && terser()
 		],
 
