@@ -69,6 +69,19 @@
  }
 </style>
 
+<!-- TODO: move to context="module" to initialize only once? -->
+<script>
+ import { setContext, getContext } from 'svelte';
+
+ import Button from '@smui/button';
+
+ import { init } from '../state/state';
+
+ setContext('state', init());
+
+ const { progress, isBaking, actions } = getContext('state');
+</script>
+
 <svelte:head>
   <title>Boule</title>
 </svelte:head>
@@ -84,14 +97,16 @@
   <slot></slot>
 </main>
 
-<aside>
-  <div class="current-label">Currently baking</div>
-  <h3>Pain de campagne</h3>
+{#if $isBaking}
+  <aside>
+    <div class="current-label">Currently baking</div>
+    <h3>Pain de campagne</h3>
 
-  <!-- TODO: more ongoing details -->
+    <!-- TODO: more ongoing details -->
 
-  <!-- TODO: stop baking -->
-</aside>
+    <Button variant="outlined" on:click={actions.stopBaking}>Stop baking</Button>
+  </aside>
+{/if}
 
 <footer>
   <div>App made by <a href="https://inso.cc">Sébastien Cevey</a></div>

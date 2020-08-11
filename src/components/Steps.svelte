@@ -1,5 +1,5 @@
 <script>
- import { onMount } from 'svelte';
+ import { onMount, getContext } from 'svelte';
  import { writable, derived } from 'svelte/store';
  import { goto } from '@sapper/app';
 
@@ -7,112 +7,18 @@
  import Switch from '@smui/switch';
  import FormField from '@smui/form-field';
 
+ import { getDurationMin, isReady, addMinDuration } from '../utils/duration';
  import { clearNotifications, notifyOngoingStep, notifyWait } from '../utils/schedule';
  import { getRecipeStepLink } from '../utils/routes';
 
  export let recipe;
-
-
- function getDurationMin(duration) {
-   return duration.type === 'range' ? duration.min : duration.value;
- }
-
- function isReady(startTime, duration) {
-   const minDuration = getDurationMin(duration);
-   const now = new Date();
-   return now - startTime > minDuration;
- }
-
- function addMinDuration(startTime, duration) {
-   const minDuration = getDurationMin(duration);
-   const d = new Date(startTime);
-   d.setMilliseconds(d.getMilliseconds() + minDuration);
-   return d;
- }
-
- const NUMBER = {
-   deserialize: (s) => Number(s),
-   serialize: (n) => String(n),
- };
-
- const STRING = {
-   deserialize: (s) => s,
-   serialize: (s) => s,
- };
-
- const OBJECT = {
-   deserialize: (s) => JSON.parse(s),
-   serialize: (o) => JSON.stringify(o),
- };
-
- const BOOLEAN = {
-   deserialize: (s) => s === "true",
-   serialize: (b) => String(b),
- };
-
- function withLocalStorage(key, defaultValue, serialization) {
-   const v = writable(defaultValue);
-
-   onMount(() => {
-     // TODO: parse JSON?
-     const localStorageValue = localStorage[key];
-     const initialValue = localStorageValue != null ? serialization.deserialize(localStorageValue) : defaultValue;
-     v.set(initialValue);
-     v.subscribe($v => {
-       localStorage[key] = $v != null ? serialization.serialize($v) : $v;
-     });
-   });
-
-   return v;
- }
-
- // TODO: upon deserialization, parse dates back into date objects
- const progress = withLocalStorage('sd:progress', {}, OBJECT);
- const alarmEnabled = withLocalStorage('sd:alarmEnabled', true, BOOLEAN);
-
  export let displayedStepId;
+
+ const { progress, alarmEnabled, isBaking, ongoingStep, ongoingStepId, nextStep, currentWait, actions } = getContext('state');
 
  const methodSteps = recipe.methodSteps || [];
 
  $: displayedStep = methodSteps.find(s => s.id === displayedStepId);
-
- const ongoingStep = derived(
-   [progress], ([$progress]) => {
-     return methodSteps.find(step => {
-       return $progress[step.id] &&
-              $progress[step.id].startTime &&
-              !$progress[step.id].endWaitTime &&
-              (!$progress[step.id].startWaitTime ||
-               !isReady($progress[step.id].startWaitTime, step.duration));
-     });
- });
-
- const ongoingStepId = derived(
-   ongoingStep,
-   $ongoingStep => $ongoingStep && $ongoingStep.id
- );
-
- const nextStep = derived(
-   [ongoingStepId],
-   ([$ongoingStepId]) => {
-     const nextIndex = methodSteps.findIndex(step => step.id === $ongoingStepId) + 1;
-     if (nextIndex < methodSteps.length) {
-       return methodSteps[nextIndex];
-     }
- });
-
- const currentWait = derived([ongoingStep, nextStep, progress], ([$ongoingStep, $nextStep, $progress]) => {
-   const startWaitTime = $ongoingStep && $progress[$ongoingStep.id] && $progress[$ongoingStep.id].startWaitTime;
-   // TODO: keep range if time range
-   const endWaitTime = startWaitTime && $ongoingStep && addMinDuration(startWaitTime, $ongoingStep.duration);
-   return $ongoingStep && startWaitTime && {
-     step: $ongoingStep,
-     nextStep: $nextStep,
-     duration: $ongoingStep.duration,
-     startWaitTime,
-     endWaitTime,
-   };
- });
 
  onMount(() => {
    // TODO: handle notification actions
@@ -124,25 +30,27 @@
        } else if (event.data.action === 'next') {
          finishWaitOngoingStep();
        } else if (event.data.action === 'snooze') {
-         delayWait(minutes(10));
+         actions.delayWait(minutes(10));
          // TODO: add more wait time
        }
      }
    });
 
-   derived([ongoingStep, progress, alarmEnabled, currentWait],
-           ([ongoingStep, progress, alarmEnabled, currentWait]) => ({ongoingStep, progress, alarmEnabled, currentWait}))
-     .subscribe(({ongoingStep, progress, alarmEnabled, currentWait}) => {
-       if (alarmEnabled) {
-         if (isStartedStep(progress, ongoingStep)) {
-           notifyOngoingStep(ongoingStep);
-         } else if (isWaitingStep(progress, ongoingStep)) {
-           notifyWait(currentWait);
-         }
-       } else {
-         clearNotifications('step');
-       }
-     });
+   derived([ongoingStep, progress, alarmEnabled, currentWait, isBaking],
+           ([ongoingStep, progress, alarmEnabled, currentWait, isBaking]) => ({ongoingStep, progress, alarmEnabled, currentWait, isBaking}))
+          .subscribe(({ongoingStep, progress, alarmEnabled, currentWait, isBaking}) => {
+            if (alarmEnabled) {
+              if (isBaking) {
+                if (isStartedStep(progress, ongoingStep)) {
+                  notifyOngoingStep(ongoingStep);
+                } else if (isWaitingStep(progress, ongoingStep)) {
+                  notifyWait(currentWait);
+                }
+              }
+            } else {
+              clearNotifications('step');
+            }
+          });
  });
 
  function displayStep(stepId) {
@@ -150,73 +58,17 @@
  }
 
  function startWaitOngoingStep() {
-   // Mark current step as wait starting.
-   progress.update($progress => {
-     return {
-       ...$progress,
-       [$ongoingStepId]: {
-         ...$progress[$ongoingStepId] || {
-         },
-         startWaitTime: new Date(),
-       },
-     };
-   });
-   // TODO: mark any previous step endWaitTime if missing
+   actions.startWaitOngoingStep();
 
-   viewNextStep();
- }
-
- function finishWaitOngoingStep() {
-   // Mark current step as done waiting.
-   progress.update($progress => {
-     return {
-       ...$progress,
-       [$ongoingStepId]: {
-         ...$progress[$ongoingStepId] || {
-         },
-         endWaitTime: new Date(),
-       },
-       // TODO: cleaner mark any next step startTime if missing
-       // TODO: should also be set upon duration elapsing?
-       [$ongoingStepId + 1]: {
-         ...$progress[$ongoingStepId + 1] || {
-         },
-         startTime: new Date(),
-       },
-     };
-   });
-
-   // Go to current step
+   // Go to current (next) step
    displayStep($ongoingStepId);
  }
 
- function delayWait(delayMillis) {
-   progress.update($progress => {
-     return {
-       ...$progress,
-       [$ongoingStepId]: {
-         ...$progress[$ongoingStepId] || {
-         },
-         // TODO: take this into account when computing end time
-         extraDelay: delayMillis,
-       },
-     };
-   });
- }
+ function finishWaitOngoingStep() {
+   actions.finishWaitOngoingStep();
 
-
- function startBaking() {
-   progress.set({
-     // Mark first step as started
-     1: {
-       startTime: new Date(),
-     },
-   });
- }
-
- function toggleAlarm(enabled) {
-   // TODO: check if has permission and browser supported, else flag
-   alarmEnabled.set(enabled);
+   // Go to current step
+   displayStep($ongoingStepId);
  }
 
  // TODO: as components
@@ -273,7 +125,7 @@
      /* Notification Triggers supported */
      hasTriggers = true;
    } else {
-     toggleAlarm(false);
+     actions.toggleAlarm(false);
    }
  })
 </script>
@@ -302,7 +154,7 @@
         <FormField>
           <Switch
             bind:checked={$alarmEnabled}
-                         on:change={(ev) => toggleAlarm(ev.target.checked)}/>
+                         on:change={(ev) => actions.toggleAlarm(ev.target.checked)}/>
           <span slot="label">Track progress with notifications</span>
         </FormField>
       </div>
@@ -315,7 +167,11 @@
   </aside>
 {/if}
 
-<!-- TODO: button to start cooking if not already -->
+{#if ! $isBaking}
+  <Button variant="outlined" on:click={() => actions.startBaking(recipe.id)}>
+    Start baking
+  </Button>
+{/if}
 
 <ol class="step-bullets">
   {#each methodSteps as step}
