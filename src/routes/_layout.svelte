@@ -79,7 +79,7 @@
 
  setContext('state', init());
 
- const { progress, isBaking, actions } = getContext('state');
+ const { isBaking, actions } = getContext('state');
 </script>
 
 <svelte:head>

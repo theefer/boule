@@ -1,20 +1,20 @@
 <script>
  import { onMount, getContext } from 'svelte';
- import { writable, derived } from 'svelte/store';
+ import { derived } from 'svelte/store';
  import { goto } from '@sapper/app';
 
  import Button from '@smui/button';
  import Switch from '@smui/switch';
  import FormField from '@smui/form-field';
 
- import { getDurationMin, isReady, addMinDuration } from '../utils/duration';
+ import { isReady } from '../utils/duration';
  import { clearNotifications, notifyOngoingStep, notifyWait } from '../utils/schedule';
  import { getRecipeStepLink } from '../utils/routes';
 
  export let recipe;
  export let displayedStepId;
 
- const { progress, alarmEnabled, isBaking, ongoingStep, ongoingStepId, nextStep, currentWait, actions } = getContext('state');
+ const { progress, alarmEnabled, isBaking, ongoingStep, ongoingStepId, currentWait, actions } = getContext('state');
 
  const methodSteps = recipe.methodSteps || [];
 
