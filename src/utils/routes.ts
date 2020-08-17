@@ -1,8 +1,10 @@
-export function getRecipeLink(recipe) {
+import type { Recipe } from "../content/recipes";
+
+export function getRecipeLink(recipe: Recipe) {
   return `/recipes/${recipe.id}`;
 }
 
-export function getRecipeStepLink(recipe, stepId) {
+export function getRecipeStepLink(recipe: Recipe, stepId: number) {
   if (stepId < 1 || stepId > recipe.methodSteps.length) {
     return undefined;
   }

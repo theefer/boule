@@ -6,10 +6,10 @@ import type { Duration } from './duration';
 export interface Recipe {
   readonly id: string;
   readonly name: string;
-  readonly methodSteps: readonly Step[];
+  readonly methodSteps: readonly RecipeStep[];
 }
 
-export interface Step {
+export interface RecipeStep {
   readonly id: number;
   readonly title: string;
   readonly duration: Quantity<Duration>;

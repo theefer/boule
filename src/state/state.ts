@@ -1,29 +1,53 @@
 import { derived, get } from 'svelte/store';
 
-import { RECIPES } from '../content/recipes';
-import { getDurationMin, isReady, addMinDuration } from '../utils/duration';
+import { RECIPES, RecipeStep } from '../content/recipes';
+import { isReady, addMinDuration } from '../utils/duration';
+import type { Duration } from '../content/duration';
 
 import { withLocalStorage, OBJECT, BOOLEAN, STRING } from './persistence';
+import type { Quantity } from '../content/quantity';
 
-// TODO: upon deserialization, parse dates back into date objects
+export interface Progress {
+  readonly [stepId: number]: StepProgress;
+}
+
+export interface StepProgress {
+  readonly startTime: Date;
+  readonly endWaitTime?: Date;
+  readonly startWaitTime?: Date;
+  readonly extraDelay?: Duration;
+}
+
+export interface ProgressWait {
+  readonly step: RecipeStep;
+  readonly nextStep?: RecipeStep;
+  readonly duration: Quantity<Duration>;
+  readonly startWaitTime: Date;
+  readonly endWaitTime?: Date;
+}
+
+type Mapper<T> = (v: T) => T;
+
+// TODO(!!): upon deserialization, parse dates back into date objects
 export function init() {
   // TODO: group both into one? or at least manage consistency
   const bakingRecipeId = withLocalStorage('sd:bakingRecipeId', '', STRING);
-  const progress = withLocalStorage('sd:progress', {}, OBJECT);
+  const progress = withLocalStorage<Progress>('sd:progress', {}, OBJECT);
   const alarmEnabled = withLocalStorage('sd:alarmEnabled', true, BOOLEAN);
 
   const isBaking = derived(bakingRecipeId, recipeId => !!recipeId);
   const bakingRecipe = derived(bakingRecipeId, recipeId => RECIPES.find(r => r.id === recipeId));
-  const bakingSteps = derived(bakingRecipe, recipe => recipe && recipe.methodSteps || [] );
+  const bakingSteps = derived(bakingRecipe, recipe => recipe && recipe.methodSteps || []);
 
   const ongoingStep = derived(
     [progress, bakingSteps], ([$progress, $bakingSteps]) => {
       return $bakingSteps.find(step => {
-        return $progress[step.id] &&
-          $progress[step.id].startTime &&
-          !$progress[step.id].endWaitTime &&
-          (!$progress[step.id].startWaitTime ||
-           !isReady($progress[step.id].startWaitTime, step.duration));
+        const ongoingStepProgress = $progress[step.id];
+        return ongoingStepProgress &&
+          ongoingStepProgress.startTime &&
+          !ongoingStepProgress.endWaitTime &&
+          (!ongoingStepProgress.startWaitTime ||
+            !isReady(ongoingStepProgress.startWaitTime, step.duration));
       });
     });
 
@@ -40,7 +64,7 @@ export function init() {
 
   const currentWait = derived(
     [ongoingStep, nextStep, progress],
-    ([$ongoingStep, $nextStep, $progress]) => {
+    ([$ongoingStep, $nextStep, $progress]): ProgressWait | undefined => {
       const startWaitTime = $ongoingStep && $progress[$ongoingStep.id] && $progress[$ongoingStep.id].startWaitTime;
       // TODO: keep range if time range
       const endWaitTime = startWaitTime && $ongoingStep && addMinDuration(startWaitTime, $ongoingStep.duration);
@@ -54,7 +78,7 @@ export function init() {
     });
 
 
-  function startBaking(recipeId) {
+  function startBaking(recipeId: string) {
     bakingRecipeId.set(recipeId);
     progress.set({
       // Mark first step as started
@@ -70,7 +94,7 @@ export function init() {
     });
   }
 
-  function updateStep(stepId, stepUpdater) {
+  function updateStep(stepId: number, stepUpdater: Mapper<StepProgress>) {
     progress.update($progress => {
       const currentStep = $progress[stepId] || {};
       const updatedStep = stepUpdater(currentStep);
@@ -81,18 +105,18 @@ export function init() {
     });
   }
 
-  function updateOngoingStep(stepUpdater) {
+  function updateOngoingStep(stepUpdater: Mapper<StepProgress>) {
     const $ongoingStepId = get(ongoingStepId);
     updateStep($ongoingStepId, stepUpdater);
   }
 
-  function mergeIn(objUpdate) {
-    return currentObj => ({...currentObj, ...objUpdate});
+  function mergeIn<T>(objUpdate: Partial<T>): Mapper<T> {
+    return currentObj => ({ ...currentObj, ...objUpdate });
   }
 
   function startWaitOngoingStep() {
     // Mark current step as wait starting.
-    updateOngoingStep(mergeIn({startWaitTime: new Date()}));
+    updateOngoingStep(mergeIn<StepProgress>({ startWaitTime: new Date() }));
     // TODO: mark any previous step endWaitTime if missing
 
     // TODO: Go to current step?
@@ -125,13 +149,13 @@ export function init() {
     // TODO: Go to current step?
   }
 
-  function delayWait(delayMillis) {
+  function delayWait(delayMillis: number) {
     // TODO: instead add to current value
     // TODO: take this into account when computing end time
-    updateOngoingStep(mergeIn({extraDelay: delayMillis}));
+    updateOngoingStep(mergeIn<StepProgress>({ extraDelay: delayMillis }));
   }
 
-  function toggleAlarm(enabled) {
+  function toggleAlarm(enabled: boolean) {
     // TODO: check if has permission and browser supported, else flag
     alarmEnabled.set(enabled);
   }

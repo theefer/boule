@@ -1,27 +1,32 @@
 import { onMount } from 'svelte';
-import { writable } from 'svelte/store';
+import { writable, Writable } from 'svelte/store';
 
-export const NUMBER = {
+interface Serializer<T> {
+  deserialize(s: string): T;
+  serialize(v: T): string;
+}
+
+export const NUMBER: Serializer<number> = {
   deserialize: (s) => Number(s),
   serialize: (n) => String(n),
 };
 
-export const STRING = {
+export const STRING: Serializer<string> = {
   deserialize: (s) => s,
   serialize: (s) => s,
 };
 
-export const OBJECT = {
+export const OBJECT: Serializer<{}> = {
   deserialize: (s) => JSON.parse(s),
   serialize: (o) => JSON.stringify(o),
 };
 
-export const BOOLEAN = {
+export const BOOLEAN: Serializer<boolean> = {
   deserialize: (s) => s === "true",
   serialize: (b) => String(b),
 };
 
-export function withLocalStorage(key, defaultValue, serialization) {
+export function withLocalStorage<T>(key: string, defaultValue: T, serialization: Serializer<T>): Writable<T> {
   const v = writable(defaultValue);
 
   onMount(() => {
