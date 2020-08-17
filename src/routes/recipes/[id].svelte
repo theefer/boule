@@ -13,11 +13,13 @@
  }
 </script>
 
-<script>
+<script lang="ts">
+ import type {Recipe} from '../../content/recipes';
+
  import Steps from '../../components/Steps.svelte';
 
- export let recipe;
- export let stepId;
+ export let recipe: Recipe;
+ export let stepId: string;
 </script>
 
 <Steps recipe={recipe} displayedStepId={stepId}></Steps>
