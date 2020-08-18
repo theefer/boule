@@ -66,7 +66,7 @@
 <script lang="ts">
  import { setContext, getContext } from 'svelte';
 
- import Button from '@smui/button';
+ import Button from '../components/Button.svelte';
 
  import { init } from '../state/state';
 
@@ -97,6 +97,6 @@
 
     <!-- TODO: more ongoing details -->
 
-    <Button variant="outlined" on:click={actions.stopBaking}>Stop baking</Button>
+    <Button on:click={actions.stopBaking}>Stop baking</Button>
   </aside>
 {/if}

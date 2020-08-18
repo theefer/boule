@@ -3,13 +3,14 @@
  import { derived } from 'svelte/store';
  import { goto } from '@sapper/app';
 
- import Button from '@smui/button';
  import Switch from '@smui/switch';
  import FormField from '@smui/form-field';
 
  import { isReady } from '../utils/duration';
  import { clearNotifications, notifyOngoingStep, notifyWait } from '../utils/schedule';
  import { getRecipeStepLink } from '../utils/routes';
+
+ import Button from './Button.svelte';
 
  export let recipe: Recipe;
  export let displayedStepId: number;
@@ -145,7 +146,8 @@
       </div>
 
       <div class="current-wait-actions">
-        <Button variant="unelevated" on:click={finishWaitOngoingStep}>Start next step</Button>
+        <!-- TODO(!!): filled variant -->
+        <Button on:click={finishWaitOngoingStep}>Start next step</Button>
       </div>
     </div>
 
@@ -171,7 +173,7 @@
 {/if}
 
 {#if ! $isBaking}
-  <Button variant="outlined" on:click={() => actions.startBaking(recipe.id)}>
+  <Button on:click={() => actions.startBaking(recipe.id)}>
     Start baking
   </Button>
 {/if}
@@ -207,7 +209,8 @@
 <!-- TODO(!!!!): DEBUG why not the same -->
 {#if $ongoingStep && displayedStep.id === $ongoingStep.id && isStartedStep($progress, displayedStep)}
   <div class="step-actions">
-    <Button variant="unelevated" on:click={startWaitOngoingStep}>Done</Button>
+    <!-- TODO(!!): filled variant -->
+    <Button on:click={startWaitOngoingStep}>Done</Button>
   </div>
 {/if}
 
