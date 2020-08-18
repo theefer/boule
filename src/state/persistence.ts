@@ -17,7 +17,11 @@ export const STRING: Serializer<string> = {
 };
 
 export const OBJECT: Serializer<{}> = {
-  deserialize: (s) => JSON.parse(s),
+  deserialize: (s) => {
+    const obj = JSON.parse(s);
+    processDates(obj);
+    return obj;
+  },
   serialize: (o) => JSON.stringify(o),
 };
 
@@ -30,7 +34,6 @@ export function withLocalStorage<T>(key: string, defaultValue: T, serialization:
   const v = writable(defaultValue);
 
   onMount(() => {
-    // TODO: parse JSON?
     const localStorageValue = localStorage[key];
     const initialValue = localStorageValue != null ? serialization.deserialize(localStorageValue) : defaultValue;
     v.set(initialValue);
@@ -41,3 +44,29 @@ export function withLocalStorage<T>(key: string, defaultValue: T, serialization:
 
   return v;
 }
+
+
+
+// Hacky processor to turn string-serialized Date objects back into Dates.
+function processDates(obj: unknown) {
+  if (!isObject(obj)) {
+    return;
+  }
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === 'string' && isSerializedDate(value)) {
+      obj[key] = deserializeDate(value);
+    } else if (Array.isArray(value)) {
+      value.forEach(processDates);
+    } else if (typeof value === 'object') {
+      processDates(value);
+    }
+  }
+}
+
+function isObject(obj: unknown): obj is { [key: string]: unknown } {
+  return typeof obj === 'object' && !Array.isArray(obj) && obj != null;
+}
+
+const isSerializedDate = (s: string) => s.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/);
+const deserializeDate = (s: string) => new Date(s);

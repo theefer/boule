@@ -204,7 +204,8 @@
   </ul>
 {/if}
 
-{#if displayedStep === $ongoingStep && isStartedStep($progress, displayedStep)}
+<!-- TODO(!!!!): DEBUG why not the same -->
+{#if $ongoingStep && displayedStep.id === $ongoingStep.id && isStartedStep($progress, displayedStep)}
   <div class="step-actions">
     <Button variant="unelevated" on:click={startWaitOngoingStep}>Done</Button>
   </div>
