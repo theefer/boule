@@ -19,7 +19,7 @@
  import Steps from '../../components/Steps.svelte';
 
  export let recipe: Recipe;
- export let stepId: string;
+ export let stepId: number;
 </script>
 
 <Steps recipe={recipe} displayedStepId={stepId}></Steps>

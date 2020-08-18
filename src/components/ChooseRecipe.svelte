@@ -1,7 +1,8 @@
-<script>
+<script lang="ts">
  import {getRecipeLink} from '../utils/routes';
+ import type {Recipe} from '../content/recipes';
 
- export let recipes;
+ export let recipes: readonly Recipe[];
 </script>
 
 <!-- TODO: choose variant: slow/fast leaven (or on next page) -->

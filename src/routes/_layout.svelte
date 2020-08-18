@@ -70,7 +70,7 @@
 </style>
 
 <!-- TODO: move to context="module" to initialize only once? -->
-<script>
+<script lang="ts">
  import { setContext, getContext } from 'svelte';
 
  import Button from '@smui/button';

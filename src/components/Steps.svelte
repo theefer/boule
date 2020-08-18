@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
  import { onMount, getContext } from 'svelte';
  import { derived } from 'svelte/store';
  import { goto } from '@sapper/app';
@@ -11,8 +11,8 @@
  import { clearNotifications, notifyOngoingStep, notifyWait } from '../utils/schedule';
  import { getRecipeStepLink } from '../utils/routes';
 
- export let recipe;
- export let displayedStepId;
+ export let recipe: Recipe;
+ export let displayedStepId: number;
 
  const { progress, alarmEnabled, isBaking, ongoingStep, ongoingStepId, currentWait, actions } = getContext('state');
 
@@ -38,19 +38,19 @@
 
    derived([ongoingStep, progress, alarmEnabled, currentWait, isBaking],
            ([ongoingStep, progress, alarmEnabled, currentWait, isBaking]) => ({ongoingStep, progress, alarmEnabled, currentWait, isBaking}))
-          .subscribe(({ongoingStep, progress, alarmEnabled, currentWait, isBaking}) => {
-            if (alarmEnabled) {
-              if (isBaking) {
-                if (isStartedStep(progress, ongoingStep)) {
-                  notifyOngoingStep(ongoingStep);
-                } else if (isWaitingStep(progress, ongoingStep)) {
-                  notifyWait(currentWait);
-                }
-              }
-            } else {
-              clearNotifications('step');
-            }
-          });
+   .subscribe(({ongoingStep, progress, alarmEnabled, currentWait, isBaking}) => {
+     if (alarmEnabled) {
+       if (isBaking && ongoingStep) {
+         if (isStartedStep(progress, ongoingStep)) {
+           notifyOngoingStep(ongoingStep);
+         } else if (isWaitingStep(progress, ongoingStep)) {
+           notifyWait(currentWait);
+         }
+       }
+     } else {
+       clearNotifications('step');
+     }
+   });
  });
 
  function displayStep(stepId) {
@@ -90,25 +90,28 @@
  }
 
  function isCompletedStep($progress, step) {
-   return $progress[step.id] &&
-          $progress[step.id].startTime &&
-          ($progress[step.id].endWaitTime ||
-           ($progress[step.id].startWaitTime &&
+   const stepProgress = $progress[step.id];
+   return stepProgress &&
+          stepProgress.startTime &&
+          (stepProgress.endWaitTime ||
+           (stepProgress.startWaitTime &&
             isReady($progress[step.id].startWaitTime, step.duration)));
  }
 
  function isStartedStep($progress, step) {
-   return $progress[step.id] &&
-          $progress[step.id].startTime &&
-          !$progress[step.id].startWaitTime;
+   const stepProgress = $progress[step.id];
+   return stepProgress &&
+          stepProgress.startTime &&
+          !stepProgress.startWaitTime;
  }
 
  function isWaitingStep($progress, step) {
-   return $progress[step.id] &&
-          $progress[step.id].startTime &&
-          !$progress[step.id].endWaitTime &&
-          ($progress[step.id].startWaitTime &&
-           !isReady($progress[step.id].startWaitTime, step.duration));
+   const stepProgress = $progress[step.id];
+   return stepProgress &&
+          stepProgress.startTime &&
+          !stepProgress.endWaitTime &&
+          (stepProgress.startWaitTime &&
+           !isReady(stepProgress.startWaitTime, step.duration));
  }
 
  function getStepLink(stepId) {
