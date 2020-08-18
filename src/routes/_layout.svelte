@@ -32,13 +32,6 @@
  }
  /* TODO: if present, add bottom margin to main */
 
- footer {
-   margin-top: 40px;
-   text-align: center;
-   font-size: 12px;
-   color: #bbb;
- }
-
  .current-label {
    font-size: 0.66em;
    text-transform: uppercase;
@@ -107,8 +100,3 @@
     <Button variant="outlined" on:click={actions.stopBaking}>Stop baking</Button>
   </aside>
 {/if}
-
-<footer>
-  <div>App made by <a href="https://inso.cc">Sébastien Cevey</a></div>
-  <div>Logo made by <a href="http://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon.com</a></div>
-</footer>
