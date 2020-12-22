@@ -3,15 +3,13 @@
  import { derived } from 'svelte/store';
  import { goto } from '@sapper/app';
 
- import Switch from '@smui/switch';
- import FormField from '@smui/form-field';
-
  import { minutes } from '../content/duration';
  import { isReady } from '../utils/duration';
  import { clearNotifications, notifyOngoingStep, notifyWait } from '../utils/schedule';
  import { getRecipeStepLink } from '../utils/routes';
 
  import Button from './Button.svelte';
+ import Toggle from './Toggle.svelte';
 
  export let recipe: Recipe;
  export let displayedStepId: number;
@@ -162,12 +160,12 @@
 
     {#if hasTriggers}
       <div>
-        <FormField>
-          <Switch
-            bind:checked={$alarmEnabled}
-                         on:change={(ev) => actions.toggleAlarm(ev.target.checked)}/>
-          <span slot="label">Track progress with notifications</span>
-        </FormField>
+        <Toggle
+          checked={$alarmEnabled}
+          on:change={(ev) => actions.toggleAlarm(ev.detail)}
+        >
+          Track progress with notifications
+        </Toggle>
       </div>
     {:else}
       <p>
@@ -215,7 +213,7 @@
   </ul>
 {/if}
 
-<!-- TODO(!!!!): DEBUG why not the same -->
+<!-- TODO(!!!!): DEBUG why not the same - same recipe? -->
 {#if $ongoingStep && displayedStep.id === $ongoingStep.id && isStartedStep($progress, displayedStep)}
   <div class="step-actions">
     <!-- TODO(!!): filled variant -->
