@@ -72,7 +72,7 @@
 
  setContext('state', init());
 
- const { isBaking, actions } = getContext('state');
+ const { isBaking, bakingRecipe, actions, ongoingStep } = getContext('state');
 </script>
 
 <svelte:head>
@@ -93,9 +93,11 @@
 {#if $isBaking}
   <aside>
     <div class="current-label">Currently baking</div>
-    <h3>Pain de campagne</h3>
+    <h3>{$bakingRecipe.name}</h3>
 
-    <!-- TODO: more ongoing details -->
+    <div>{$ongoingStep.title}</div>
+
+    <!-- TODO: more ongoing details re active vs waiting, actions, timing, eta, etc -->
 
     <Button on:click={actions.stopBaking}>Stop baking</Button>
   </aside>

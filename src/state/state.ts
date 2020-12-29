@@ -163,6 +163,7 @@ export function init() {
   return {
     progress,
     isBaking,
+    bakingRecipe,
     ongoingStep,
     ongoingStepId,
     nextStep,
