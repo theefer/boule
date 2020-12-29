@@ -1,19 +1,15 @@
 describe('Sapper template app', () => {
-	beforeEach(() => {
-		cy.visit('/')
-	});
+    beforeEach(() => {
+	cy.visit('/');
+    });
 
-	it('has the correct <h1>', () => {
-		cy.contains('h1', 'Great success!')
-	});
+    it('has the correct <h1>', () => {
+	cy.contains('h1', 'Boule');
+    });
 
-	it('navigates to /about', () => {
-		cy.get('nav a').contains('about').click();
-		cy.url().should('include', '/about');
-	});
-
-	it('navigates to /blog', () => {
-		cy.get('nav a').contains('blog').click();
-		cy.url().should('include', '/blog');
-	});
+    it('navigates to the first recipe', () => {
+	cy.get('h2 a').contains('Pain de campagne').click();
+        cy.url().should('include', '/recipes/pain-de-campagne');
+	cy.contains('h2', 'Set the leaven');
+    });
 });
