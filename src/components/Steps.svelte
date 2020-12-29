@@ -179,9 +179,12 @@
 {/if}
 
 {#if ! $isBaking}
-  <Button on:click={() => actions.startBaking(recipe.id)}>
-    Start baking
-  </Button>
+  <!-- TODO: show recipe name -->
+  <div class="start-baking">
+    <Button on:click={() => actions.startBaking(recipe.id)}>
+      Start baking
+    </Button>
+  </div>
 {/if}
 
 <ol class="step-bullets">
@@ -254,6 +257,10 @@
 
  h2 {
    margin-top: 1em;
+ }
+
+ .start-baking {
+   margin-bottom: 1em;
  }
 
  .current-wait-main {
