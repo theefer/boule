@@ -27,22 +27,6 @@ const dedupe = importee =>
 
 const aliases = () => ({
     resolve: [".svelte", ".js", ".scss", ".css"],
-    entries: [{
-            find: /^@smui\/([^\/]+)$/,
-            replacement: path.resolve(
-                __dirname,
-                "node_modules",
-                "@smui",
-                "$1",
-                "index.js"
-            )
-        },
-        {
-            find: /^@smui\/([^\/]+)\/(.*)$/,
-
-            replacement: path.resolve(__dirname, "node_modules", "@smui", "$1", "$2")
-        }
-    ]
 });
 
 const postcssOptions = () => ({
