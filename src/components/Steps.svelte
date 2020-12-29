@@ -6,6 +6,7 @@
  import Switch from '@smui/switch';
  import FormField from '@smui/form-field';
 
+ import { minutes } from '../content/duration';
  import { isReady } from '../utils/duration';
  import { clearNotifications, notifyOngoingStep, notifyWait } from '../utils/schedule';
  import { getRecipeStepLink } from '../utils/routes';
@@ -31,8 +32,7 @@
        } else if (event.data.action === 'next') {
          finishWaitOngoingStep();
        } else if (event.data.action === 'snooze') {
-         actions.delayWait(minutes(10));
-         // TODO: add more wait time
+         delayWaitOngoingStep();
        }
      }
    });
@@ -71,6 +71,12 @@
    // Go to current step
    displayStep($ongoingStepId);
  }
+
+ function delayWaitOngoingStep() {
+   actions.delayWait(minutes(10));
+   // TODO: add more wait time
+ }
+
 
  // TODO: as components
  const formatter = new Intl.DateTimeFormat('en-GB', {timeStyle: 'short'});
