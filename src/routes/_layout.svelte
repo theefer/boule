@@ -1,5 +1,6 @@
 <style type="text/scss">
  @import "../theme/colors";
+ @import "../theme/fonts";
 
  $header-border-color: #eee;
 
@@ -13,6 +14,9 @@
  }
  
  header {
+   display: flex;
+   flex-direction: row;
+   justify-content: space-between;
    max-width: 44em;
    border-bottom: 1px solid $header-border-color;
    padding: 10px 1em;
@@ -42,6 +46,10 @@
    text-decoration: none;
  }
 
+ .about {
+   text-decoration: none;
+ }
+
  .logo {
    max-height: 24px;
    width: auto;
@@ -49,8 +57,7 @@
  }
 
  h1 {
-   font-size: 1.3em;
-   font-weight: 700;
+   @include font-logo;
    margin: 0;
    /* margin: 0 0 0.5em 0; */
  }
@@ -84,6 +91,9 @@
     <img src="/logo-128.png" alt="" width="128" height="128" class="logo">
     <h1>Boule</h1>
   </a>
+  <nav>
+    <a href="/about" class="about">About</a>
+  </nav>
 </header>
 
 <main>

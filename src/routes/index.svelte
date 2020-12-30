@@ -4,12 +4,15 @@
  import {RECIPES} from '../content/recipes';
 </script>
 
-<style>
+<style type="text/scss">
+ @import "../theme/fonts";
+ @import "../theme/colors";
+
  footer {
    margin-top: 40px;
    text-align: center;
-   font-size: 12px;
-   color: #bbb;
+   font-size: $font-size-tiny;
+   color: $foreground-color-faint;
  }
 </style>
 

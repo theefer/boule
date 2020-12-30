@@ -238,9 +238,19 @@
   {/if}
 </nav>
 
-<style>
+<style type="text/scss">
+ @import "../theme/colors";
+
+@mixin bullet-list {
+  margin-left: 20px;
+
+  li {
+    list-style-type: disc;
+  }
+}
+
  aside {
-   border-left: 10px solid #c77e3e;
+   border-left: 10px solid $primary-color;
    background-color: #f7f0de;
    padding: 10px;
    margin-bottom: 20px;
@@ -255,6 +265,10 @@
 
  h2 {
    margin-top: 1em;
+ }
+
+ ul {
+   @include bullet-list;
  }
 
  .start-baking {

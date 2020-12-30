@@ -20,6 +20,12 @@ a {
 	color: inherit;
 }
 
+ol, ul, li {
+	margin: unset;
+	padding: unset;
+	list-style-type: none;
+}
+
 code {
 	font-family: menlo, inconsolata, monospace;
 	font-size: calc(1em - 2px);

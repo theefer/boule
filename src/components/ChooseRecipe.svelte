@@ -16,12 +16,8 @@
   {/each}
 </ol>
 
-<style>
- ol, li {
-   margin: unset;
-   padding: unset;
-   list-style-type: none;
- }
+<style type="text/scss">
+ @import "../theme/fonts";
 
  li {
    display: flex;
@@ -31,5 +27,9 @@
 
  a {
    text-decoration: none;
+ }
+
+ h2 {
+   @include font-main-heading;
  }
 </style>
