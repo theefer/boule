@@ -1,0 +1,16 @@
+$font-size-logo: 20px;
+$font-size-main-heading: 24px;
+$font-size-tiny: 12px;
+
+$font-weight-logo: 700;
+$font-weight-main-heading: 400;
+
+@mixin font-logo {
+   font-size: $font-size-logo;
+   font-weight: $font-weight-logo;
+}
+
+@mixin font-main-heading {
+   font-size: $font-size-main-heading;
+   font-weight: $font-weight-main-heading;
+}
