@@ -82,10 +82,12 @@ export default {
 				'process.env.NODE_ENV': JSON.stringify(mode)
 			}),
 			svelte({
-				dev,
-				hydratable: true,
+				compilerOptions: {
+					dev,
+					hydratable: true,
+                                },
 				emitCss: true,
-                          preprocess: sveltePreprocess(),
+				preprocess: sveltePreprocess(),
 			}),
 			resolve({
 				browser: true,
@@ -131,9 +133,11 @@ export default {
 				'process.env.NODE_ENV': JSON.stringify(mode)
 			}),
 			svelte({
-				generate: 'ssr',
-                          preprocess: sveltePreprocess(),
-				dev,
+				compilerOptions: {
+					generate: 'ssr',
+					dev,
+                                },
+				preprocess: sveltePreprocess(),
 			}),
 			resolve({
 				dedupe,

@@ -107,7 +107,9 @@ export function init() {
 
   function updateOngoingStep(stepUpdater: Mapper<StepProgress>) {
     const $ongoingStepId = get(ongoingStepId);
-    updateStep($ongoingStepId, stepUpdater);
+    if ($ongoingStepId !== undefined) {
+      updateStep($ongoingStepId, stepUpdater);
+    }
   }
 
   function mergeIn<T>(objUpdate: Partial<T>): Mapper<T> {
@@ -124,6 +126,9 @@ export function init() {
 
   function finishWaitOngoingStep() {
     const $ongoingStepId = get(ongoingStepId);
+    if ($ongoingStepId === undefined) {
+      return;
+    }
 
     const now = new Date();
 
