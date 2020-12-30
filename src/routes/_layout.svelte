@@ -1,5 +1,8 @@
-<!-- <style lang="sass"> -->
-<style>
+<style type="text/scss">
+ @import "../theme/colors";
+
+ $header-border-color: #eee;
+
  main {
    position: relative;
    max-width: 44em;
@@ -8,19 +11,16 @@
    margin: 0 auto;
    box-sizing: border-box;
  }
-
- /* $header-border-color: #ccc;
-  */
+ 
  header {
    max-width: 44em;
-   /* border-bottom: 1px solid $header-border-color; */
-   border-bottom: 1px solid #eee;
+   border-bottom: 1px solid $header-border-color;
    padding: 10px 1em;
    margin: 0 auto 10px;
  }
 
  aside {
-   border-top: 10px solid #c77e3e;
+   border-top: 10px solid $primary-color;
    background-color: #f7f0de;
    max-width: 40em;
    padding: 5px 10px;
