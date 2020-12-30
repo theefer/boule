@@ -94,7 +94,7 @@ export default {
 				dedupe,
 			}),
 			commonjs(),
-		  typescript({ sourceMap: dev }),
+			typescript({ sourceMap: dev }),
 			postcss(postcssOptions()),
 
 			legacy && babel({
