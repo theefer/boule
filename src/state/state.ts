@@ -77,6 +77,31 @@ export function init() {
       };
     });
 
+  const isStartedStep = derived([progress], ([$progress]) => (step: RecipeStep) => {
+    const stepProgress = $progress[step.id];
+    return stepProgress &&
+      stepProgress.startTime &&
+      !stepProgress.startWaitTime;
+  });
+
+  const isWaitingStep = derived([progress], ([$progress]) => (step: RecipeStep) => {
+    const stepProgress = $progress[step.id];
+    return stepProgress &&
+      stepProgress.startTime &&
+      !stepProgress.endWaitTime &&
+      (stepProgress.startWaitTime &&
+        !isReady(stepProgress.startWaitTime, step.duration));
+  });
+
+  const isCompletedStep =
+    derived([progress], ([$progress]) => (step: RecipeStep) => {
+      const stepProgress = $progress[step.id];
+      return stepProgress &&
+        stepProgress.startTime &&
+        (stepProgress.endWaitTime ||
+          (stepProgress.startWaitTime &&
+            isReady(stepProgress.startWaitTime, step.duration)));
+    });
 
   function startBaking(recipeId: string) {
     bakingRecipeId.set(recipeId);
@@ -166,6 +191,7 @@ export function init() {
   }
 
   return {
+    // Properties
     progress,
     isBaking,
     bakingRecipe,
@@ -174,6 +200,11 @@ export function init() {
     nextStep,
     currentWait,
     alarmEnabled,
+    // Methods
+    isStartedStep,
+    isWaitingStep,
+    isCompletedStep,
+    // Actions
     actions: {
       startBaking,
       stopBaking,

@@ -9,15 +9,15 @@
  import { getRecipeStepLink } from '../utils/routes';
 
  import Button from './Button.svelte';
+ import StepProgress from './StepProgress.svelte';
  import Toggle from './Toggle.svelte';
 
  export let recipe: Recipe;
  export let displayedStepId: number;
 
- const { progress, alarmEnabled, isBaking, ongoingStep, ongoingStepId, currentWait, actions } = getContext('state');
+ const { progress, alarmEnabled, isBaking, ongoingStep, ongoingStepId, currentWait, isStartedStep, isWaitingStep, actions } = getContext('state');
 
- const methodSteps = recipe.methodSteps || [];
-
+ $: methodSteps = recipe.methodSteps || [];
  $: displayedStep = methodSteps.find(s => s.id === displayedStepId);
 
  onMount(() => {
@@ -40,9 +40,9 @@
    .subscribe(({ongoingStep, progress, alarmEnabled, currentWait, isBaking}) => {
      if (alarmEnabled) {
        if (isBaking && ongoingStep) {
-         if (isStartedStep(progress, ongoingStep)) {
+         if ($isStartedStep(ongoingStep)) {
            notifyOngoingStep(ongoingStep);
-         } else if (isWaitingStep(progress, ongoingStep)) {
+         } else if ($isWaitingStep(ongoingStep)) {
            notifyWait(currentWait);
          }
        }
@@ -92,31 +92,6 @@
    return duration.type === 'exact' ?
           formatDurationValue(duration.value) :
           `${formatDurationValue(duration.min)}-${formatDurationValue(duration.max)}`;
- }
-
- function isCompletedStep($progress, step) {
-   const stepProgress = $progress[step.id];
-   return stepProgress &&
-          stepProgress.startTime &&
-          (stepProgress.endWaitTime ||
-           (stepProgress.startWaitTime &&
-            isReady($progress[step.id].startWaitTime, step.duration)));
- }
-
- function isStartedStep($progress, step) {
-   const stepProgress = $progress[step.id];
-   return stepProgress &&
-          stepProgress.startTime &&
-          !stepProgress.startWaitTime;
- }
-
- function isWaitingStep($progress, step) {
-   const stepProgress = $progress[step.id];
-   return stepProgress &&
-          stepProgress.startTime &&
-          !stepProgress.endWaitTime &&
-          (stepProgress.startWaitTime &&
-           !isReady(stepProgress.startWaitTime, step.duration));
  }
 
  function getStepLink(stepId) {
@@ -185,19 +160,11 @@
   </div>
 {/if}
 
-<ol class="step-bullets">
-  {#each methodSteps as step}
-    <a href="{getStepLink(step.id)}"
-       class="step-bullet"
-       class:step-bullet--displayed="{step == displayedStep}"
-       class:step-bullet--started="{isStartedStep($progress, step)}"
-       class:step-bullet--waiting="{isWaitingStep($progress, step)}"
-       class:step-bullet--completed="{isCompletedStep($progress, step)}"
-       class:step-bullet--future="{!isStartedStep($progress, step) && !isWaitingStep($progress, step) && !isCompletedStep($progress, step)}"
-    >
-    </a>
-  {/each}
-</ol>
+<StepProgress
+  recipe={recipe}
+  displayedStep={displayedStep}
+>
+</StepProgress>
 
 <h2>{displayedStep.title}</h2>
 
@@ -214,7 +181,7 @@
 {/if}
 
 <!-- TODO(!!!!): DEBUG why not the same - same recipe? -->
-{#if $ongoingStep && displayedStep.id === $ongoingStep.id && isStartedStep($progress, displayedStep)}
+{#if $ongoingStep && displayedStep.id === $ongoingStep.id && $isStartedStep(displayedStep)}
   <div class="step-actions">
     <!-- TODO(!!): filled variant -->
     <Button on:click={startWaitOngoingStep}>Done</Button>
@@ -241,13 +208,13 @@
 <style type="text/scss">
  @import "../theme/colors";
 
-@mixin bullet-list {
-  margin-left: 20px;
+ @mixin bullet-list {
+   margin-left: 20px;
 
-  li {
-    list-style-type: disc;
-  }
-}
+   li {
+     list-style-type: disc;
+   }
+ }
 
  aside {
    border-left: 10px solid $primary-color;
@@ -286,53 +253,5 @@
 
  .step-actions {
    text-align: center;
- }
-
- .step-bullets {
-   display: flex;
-   flex-direction: row;
-   margin: 0;
-   padding: 0;
- }
-
- .step-bullet {
-   font-size: 0.88em;
-   text-decoration: none;
-   display: inline-block;
-   width: 8px;
-   height: 8px;
-   border-radius: 8px;
-   margin-right: 4px;
- }
-
- .step-bullet--started {
-   border: 2px solid #c77e3e;
- }
-
- .step-bullet--waiting {
-   border: 2px solid #c77e3e;
-   /* TODO: pulse instead */
-   background-color: #e7ce9e;
- }
-
- .step-bullet--completed {
-   border: 2px solid #c77e3e;
-   background-color: #c77e3e;
- }
-
- .step-bullet--future {
-   border: 2px solid #e7ce9e;
-   background-color: #e7ce9e;
- }
-
- .step-bullet--displayed:after {
-   content: "^";
-   position: relative;
-   top: 5px;
-   left: -2px;
-   color: #c77e3e;
-   font-weight: bold;
-   font-family: monospace;
-   font-size: 1.33em;
  }
 </style>
