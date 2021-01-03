@@ -16,11 +16,18 @@
  header {
    display: flex;
    flex-direction: row;
-   justify-content: space-between;
    max-width: 44em;
    border-bottom: 1px solid $header-border-color;
    padding: 10px 1em;
    margin: 0 auto 10px;
+ }
+
+ .header-main {
+   display: flex;
+   /* Anchor absolutely positioned content. */
+   position: relative;
+   /* Push action to the right */
+   flex: 1;
  }
 
  .currently-baking {
@@ -41,7 +48,7 @@
    text-transform: uppercase;
  }
 
- .header-line {
+ .home-link {
    display: flex;
    text-decoration: none;
  }
@@ -50,21 +57,28 @@
    text-decoration: none;
  }
 
- .logo {
+ .home-link__logo {
    max-height: 24px;
    width: auto;
    margin-right: 0.5em;
  }
 
- h1 {
+ .home-link__text,
+ .recipe-name {
    @include font-logo;
    margin: 0;
-   /* margin: 0 0 0.5em 0; */
+   /* Absolute position for smoother fly in/out. */
+   position: absolute;
+   left: 30px;
+ }
+
+ .baking-action {
+   font-size: $font-size-small;
  }
 
  @media (min-width: 40em) {
-   .header-line {
-     margin: 0 1em;
+   .home-link {
+     margin-left: 0 1em;
    }
  }
 </style>
@@ -73,13 +87,16 @@
 <script lang="ts">
  import { setContext, getContext } from 'svelte';
 
+ import { fly } from 'svelte/transition';
+
  import Button from '../components/Button.svelte';
 
  import { init } from '../state/state';
+ import { getRecipeLink } from '../utils/routes';
 
  setContext('state', init());
 
- const { isBaking, bakingRecipe, actions, ongoingStep } = getContext('state');
+ const { isBaking, bakingRecipe, actions, ongoingStep, displayedRecipe } = getContext('state');
 </script>
 
 <svelte:head>
@@ -87,13 +104,57 @@
 </svelte:head>
 
 <header>
-  <a href="/" class="header-line">
-    <img src="/logo-128.png" alt="" width="128" height="128" class="logo">
-    <h1>Boule</h1>
-  </a>
-  <nav>
-    <a href="/about" class="about">About</a>
-  </nav>
+  <div class="header-main">
+    <a href="/" class="home-link">
+      <img src="/logo-128.png" alt="" width="128" height="128" class="home-link__logo">
+    </a>
+      {#if ! $displayedRecipe}
+        <h1
+          class="home-link__text"
+          in:fly="{{  x: -10, duration: 200, delay: 200 }}"
+          out:fly="{{  x: -10, duration: 200 }}"
+        >
+          Boule
+        </h1>
+      {/if}
+      <!-- </a>
+      -->
+    {#if $displayedRecipe}
+      <h2
+        class="recipe-name"
+        in:fly="{{  x: -10, duration: 200, delay: 200 }}"
+        out:fly="{{  x: -10, duration: 200 }}"
+      >
+        {$displayedRecipe.name}
+      </h2>
+    {/if}
+  </div>
+
+  <!-- TODO: fly in/out more smoothly -->
+  {#if $isBaking}
+    {#if $displayedRecipe === $bakingRecipe}
+      <!-- TODO: hover+click/tap again to stop? -->
+      <div class="baking-action">
+        <Button>Currently baking</Button>
+      </div>
+    {:else}
+      <div class="baking-action">
+        <a href={getRecipeLink($bakingRecipe)}>
+          <Button>Go to current bake</Button>
+        </a>
+      </div>
+    {/if}
+  {:else}
+    {#if $displayedRecipe}
+      <div class="baking-action">
+        <Button on:click={() => actions.startBaking($displayedRecipe.id)}>Start baking</Button>
+      </div>
+    {:else}
+      <nav>
+        <a href="/about" class="about">About</a>
+      </nav>
+    {/if}
+  {/if}
 </header>
 
 <main>

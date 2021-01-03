@@ -2,7 +2,7 @@
  button {
    font-family: inherit;
    font-size: 1em;
-   padding: 0.5em 1em ;
+   padding: 0.3em 1em;
    color: #c77e3e;
    border: 1px solid #c77e3e;
    border-radius: 5px;

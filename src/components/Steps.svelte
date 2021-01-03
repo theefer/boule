@@ -152,15 +152,6 @@
 {/if}
 
 <aside class="progress">
-  {#if ! $isBaking}
-    <!-- TODO: show recipe name -->
-    <div class="start-baking">
-      <Button on:click={() => actions.startBaking(recipe.id)}>
-        Start baking
-      </Button>
-    </div>
-  {/if}
-
   <StepProgress
     recipe={recipe}
            displayedStep={displayedStep}

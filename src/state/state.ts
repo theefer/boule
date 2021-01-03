@@ -1,6 +1,6 @@
 import { derived, get } from 'svelte/store';
 
-import { RECIPES, RecipeStep } from '../content/recipes';
+import { RECIPES, RecipeStep, Recipe } from '../content/recipes';
 import { isReady, addMinDuration } from '../utils/duration';
 import type { Duration } from '../content/duration';
 
@@ -28,15 +28,38 @@ export interface ProgressWait {
 
 type Mapper<T> = (v: T) => T;
 
+
+import { stores } from '@sapper/app';
+import type { Page } from '@sapper/common';
+
+function lookupRecipe(recipeId: string): Recipe | undefined {
+  return RECIPES.find(r => r.id === recipeId);
+}
+
 // TODO(!!): upon deserialization, parse dates back into date objects
 export function init() {
+  const { page } = stores();
+
+  const displayedRecipeId = derived(page, ($page: Page) => {
+    if ($page.path?.startsWith('/recipes/')) {
+      const recipeId = $page.params.id;
+      return recipeId;
+    } else {
+      return undefined;
+    }
+  });
+  // TODO: use Option#map?
+  const displayedRecipe = derived(
+    displayedRecipeId,
+    recipeId => recipeId ? lookupRecipe(recipeId) : undefined);
+
   // TODO: group both into one? or at least manage consistency
   const bakingRecipeId = withLocalStorage('sd:bakingRecipeId', '', STRING);
   const progress = withLocalStorage<Progress>('sd:progress', {}, OBJECT);
   const alarmEnabled = withLocalStorage('sd:alarmEnabled', true, BOOLEAN);
 
   const isBaking = derived(bakingRecipeId, recipeId => !!recipeId);
-  const bakingRecipe = derived(bakingRecipeId, recipeId => RECIPES.find(r => r.id === recipeId));
+  const bakingRecipe = derived(bakingRecipeId, lookupRecipe);
   const bakingSteps = derived(bakingRecipe, recipe => recipe && recipe.methodSteps || []);
 
   const ongoingStep = derived(
@@ -200,6 +223,8 @@ export function init() {
     nextStep,
     currentWait,
     alarmEnabled,
+    // Routing state
+    displayedRecipe,
     // Methods
     isStartedStep,
     isWaitingStep,
