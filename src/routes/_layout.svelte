@@ -23,7 +23,7 @@
    margin: 0 auto 10px;
  }
 
- aside {
+ .currently-baking {
    border-top: 10px solid $primary-color;
    background-color: #f7f0de;
    max-width: 40em;
@@ -101,7 +101,7 @@
 </main>
 
 {#if $isBaking}
-  <aside>
+  <aside class="currently-baking">
     <div class="current-label">Currently baking</div>
     <h3>{$bakingRecipe.name}</h3>
 

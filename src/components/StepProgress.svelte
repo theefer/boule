@@ -34,51 +34,87 @@
 <style type="text/scss">
  @import "../theme/colors";
 
+ @mixin bullet-border($color) {
+   border: 2px solid $color;
+ }
+
+ @mixin bullet-fill($color) {
+   background-color: $color;
+ }
+
+ @mixin bullet-light-border {
+   @include bullet-border($secondary-color);
+ }
+
+ @mixin bullet-light-fill {
+   @include bullet-fill($secondary-color);
+ }
+
+ @mixin bullet-strong-border {
+   @include bullet-border($primary-color);
+ }
+
+ @mixin bullet-strong-fill {
+   @include bullet-fill($primary-color);
+ }
+
  .step-bullets {
    display: flex;
-   flex-direction: row;
-   margin: 0;
-   padding: 0;
+   flex-direction: column;
+   align-items: center;
+   gap: 8px;
+   /* Vertical line joining bullets. */
+   background: linear-gradient(
+     90deg,
+     rgba(0,0,0,0) calc(50% - 1px),
+     $secondary-color calc(50% - 1px),
+     $secondary-color calc(50% + 1px),
+     rgba(0,0,0,0) calc(50% + 1px)
+   );
  }
 
  .step-bullet {
    font-size: 0.88em;
    text-decoration: none;
    display: inline-block;
-   width: 8px;
-   height: 8px;
-   border-radius: 8px;
-   margin-right: 4px;
+   width: 12px;
+   height: 12px;
+   border-radius: 12px;
+   transition: width 0.2s ease, height 0.2s ease;
+   // TODO: variable for page bg color
+   @include bullet-fill(white);
  }
 
  .step-bullet--started {
-   border: 2px solid #c77e3e;
+   @include bullet-strong-border;
+   @include bullet-strong-fill;
+ }
+
+ @keyframes pulse {
+   0% { opacity: 1; }
+   40% { opacity: 1; }
+   50% { opacity: 0.2; }
+   60% { opacity: 1; }
+   100%   { opacity: 1; }
  }
 
  .step-bullet--waiting {
-   border: 2px solid #c77e3e;
-   /* TODO: pulse instead */
-   background-color: #e7ce9e;
+   @include bullet-strong-border;
+   @include bullet-strong-fill;
+   animation: 3s pulse infinite both ease;
  }
 
  .step-bullet--completed {
-   border: 2px solid #c77e3e;
-   background-color: #c77e3e;
+   @include bullet-light-border;
+   @include bullet-light-fill;
  }
 
  .step-bullet--future {
-   border: 2px solid #e7ce9e;
-   background-color: #e7ce9e;
+   @include bullet-light-border;
  }
 
- .step-bullet--displayed:after {
-   content: "^";
-   position: relative;
-   top: 5px;
-   left: -2px;
-   color: #c77e3e;
-   font-weight: bold;
-   font-family: monospace;
-   font-size: 1.33em;
+ .step-bullet--displayed {
+   width: 20px;
+   height: 20px;
  }
 </style>

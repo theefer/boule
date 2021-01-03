@@ -115,7 +115,7 @@
 
 
 {#if $currentWait}
-  <aside>
+  <aside class="current-wait">
     <div class="current-wait-main">
       <div class="current-wait-description">
         <strong>{$ongoingStep.title}</strong>
@@ -151,20 +151,22 @@
   </aside>
 {/if}
 
-{#if ! $isBaking}
-  <!-- TODO: show recipe name -->
-  <div class="start-baking">
-    <Button on:click={() => actions.startBaking(recipe.id)}>
-      Start baking
-    </Button>
-  </div>
-{/if}
+<aside class="progress">
+  {#if ! $isBaking}
+    <!-- TODO: show recipe name -->
+    <div class="start-baking">
+      <Button on:click={() => actions.startBaking(recipe.id)}>
+        Start baking
+      </Button>
+    </div>
+  {/if}
 
-<StepProgress
-  recipe={recipe}
-  displayedStep={displayedStep}
->
-</StepProgress>
+  <StepProgress
+    recipe={recipe}
+           displayedStep={displayedStep}
+  >
+  </StepProgress>
+</aside>
 
 <h2>{displayedStep.title}</h2>
 
@@ -216,7 +218,7 @@
    }
  }
 
- aside {
+ .current-wait {
    border-left: 10px solid $primary-color;
    background-color: #f7f0de;
    padding: 10px;
@@ -238,10 +240,6 @@
    @include bullet-list;
  }
 
- .start-baking {
-   margin-bottom: 1em;
- }
-
  .current-wait-main {
    display: flex;
    flex-direction: row;
@@ -253,5 +251,13 @@
 
  .step-actions {
    text-align: center;
+ }
+
+ .progress {
+   float: right;
+   display: flex;
+   flex-direction: column;
+   align-items: flex-end;
+   gap: 1em;
  }
 </style>
