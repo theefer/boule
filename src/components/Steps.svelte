@@ -98,9 +98,6 @@
    return getRecipeStepLink(recipe, stepId);
  }
 
- $: prevStepLink = getStepLink(displayedStepId - 1);
- $: nextStepLink = getStepLink(displayedStepId + 1);
-
  let hasTriggers = false;
 
  onMount(async () => {
@@ -181,23 +178,6 @@
   </div>
 {/if}
 
-<nav>
-  {#if prevStepLink}
-    <a href="{prevStepLink}">
-      &larr; View previous step
-    </a>
-  {:else}
-    <span></span>
-  {/if}
-  {#if nextStepLink}
-    <a href="{nextStepLink}">
-      View next step &rarr;
-    </a>
-  {:else}
-    <span></span>
-  {/if}
-</nav>
-
 <style type="text/scss">
  @import "../theme/colors";
 
@@ -214,13 +194,6 @@
    background-color: #f7f0de;
    padding: 10px;
    margin-bottom: 20px;
- }
-
- nav {
-   display: flex;
-   flex-direction: row;
-   justify-content: space-between;
-   margin-top: 10px;
  }
 
  h2 {
