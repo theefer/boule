@@ -10,6 +10,6 @@ describe('Sapper template app', () => {
     it('navigates to the first recipe', () => {
 	cy.get('h2 a').contains('Pain de campagne').click();
         cy.url().should('include', '/recipes/pain-de-campagne');
-	cy.contains('h2', 'Set the leaven');
+	cy.contains('.description', 'The pain de campagne, or “country bread” in French, is a rustic sourdough with a touch of rye and whole wheat.');
     });
 });

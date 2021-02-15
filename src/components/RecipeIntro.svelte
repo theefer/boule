@@ -36,7 +36,7 @@
 </script>
 
 {#if recipe.description}
-  <p>{recipe.description}</p>
+  <p class="description">{recipe.description}</p>
 {/if}
 
 <h2 class="ingredient-heading">Ingredients</h2>

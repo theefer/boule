@@ -13,7 +13,7 @@ type Ingredient = string;
 export interface Recipe {
   readonly id: string;
   readonly name: string;
-  readonly description: string;
+  readonly description?: string;
   readonly methodSteps: readonly RecipeStep[];
 }
 
