@@ -10,6 +10,9 @@
  export let displayedStep: RecipeStep;
 
  let hovering: boolean;
+ let touching: boolean;
+
+ $: showNav = hovering || touching;
 
  // TODO: expose on state
  $: steps = recipe.methodSteps || [];
@@ -17,20 +20,55 @@
  $: prevStepLink = getStepLink(displayedStep.id - 1);
  $: nextStepLink = getStepLink(displayedStep.id + 1);
 
- let timeout: number;
+ let hoveringTimeout: number;
+ let touchingTimeout: number;
 
  function setHovering(isOver: boolean) {
-   if (timeout) {
-     clearTimeout(timeout);
+   if (hoveringTimeout) {
+     clearTimeout(hoveringTimeout);
    }
 
    if (isOver) {
      hovering = true;
    } else {
      // Delay to avoid flicker when hovering in/out.
-     timeout = setTimeout(() => {
+     hoveringTimeout = setTimeout(() => {
        hovering = false;
      }, 1000);
+   }
+ }
+
+ function setIsTouching(isTouching: boolean, ev: TouchEvent) {
+   if (isTouching) {
+     // Avoid long-press opening a menu.
+     ev.preventDefault();
+     // Still cause the touch to activate the link, otherwise cancelled
+     // by preventDefault.
+     ev.target.click();
+   }
+
+   if (touchingTimeout) {
+     clearTimeout(touchingTimeout);
+   }
+
+   if (isTouching) {
+     touching = true;
+   } else {
+     // Hide after a delay.
+     touchingTimeout = setTimeout(() => {
+       touching = false;
+       // Also cancel hovering which is triggered by touching.
+       hovering = false;
+     }, 1000);
+   }
+ }
+
+ function handleTouchMove(ev: Event) {
+   const touches = Array.from(ev.changedTouches);
+   const touchedEls = touches.map(t => document.elementFromPoint(t.clientX, t.clientY));
+   const el = touchedEls.filter(el => el.dataset.stepId)[0];
+   if (el) {
+     el.click();
    }
  }
 
@@ -43,7 +81,10 @@
 <div
   class="step-progress"
   on:mouseenter="{() => setHovering(true)}"
-  on:mouseleave="{() => setHovering(false)}">
+  on:mouseleave="{() => setHovering(false)}"
+  on:touchstart="{(ev) => setIsTouching(true, ev)}"
+  on:touchend="{(ev) => setIsTouching(false, ev)}"
+  on:touchmove="{(ev) => handleTouchMove(ev)}">
   <div class="prev-next-nav">
     <!-- TODO: don't show a link when it isn't one -->
     <a href="{prevStepLink}"
@@ -62,8 +103,9 @@
          class:step-bullet--waiting="{$isWaitingStep(step)}"
          class:step-bullet--completed="{$isCompletedStep(step)}"
          class:step-bullet--future="{!$isStartedStep(step) && !$isWaitingStep(step) && !$isCompletedStep(step)}"
+         data-step-id={step.id}
       >
-        {#if hovering}
+        {#if showNav}
           <span
             class="step-title"
             transition:fade="{{ duration: 200 }}"
