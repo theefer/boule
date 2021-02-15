@@ -13,6 +13,11 @@
   Created by <a href="https://inso.cc">Sébastien Cevey</a>.
 </p>
 
+<p>
+  Logo by <a href="http://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon.com</a>.
+</p>
+
+
 <style type="text/scss">
  @import "../theme/colors";
  @import "../theme/fonts";
