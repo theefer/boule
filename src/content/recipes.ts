@@ -3,9 +3,17 @@ import type { Quantity } from './quantity';
 import { hours, minutes } from './duration';
 import type { Duration } from './duration';
 
+enum IngredientsCategory {
+  LEAVEN = 'leaven',
+  DOUGH = 'dough',
+}
+
+type Ingredient = string;
+
 export interface Recipe {
   readonly id: string;
   readonly name: string;
+  readonly description: string;
   readonly methodSteps: readonly RecipeStep[];
 }
 
@@ -13,12 +21,14 @@ export interface RecipeStep {
   readonly id: number;
   readonly title: string;
   readonly duration: Quantity<Duration>;
-  readonly ingredients?: readonly string[];
+  readonly ingredients?: readonly Ingredient[];
+  readonly ingredientsCategory?: IngredientsCategory;
 }
 
 export const RECIPES: readonly Recipe[] = [{
   id: 'pain-de-campagne',
   name: 'Pain de campagne',
+  description: 'The pain de campagne, or “country bread” in French, is a rustic sourdough with a touch of rye and whole wheat.',
   methodSteps: [
     {
       id: 1,
@@ -31,6 +41,7 @@ export const RECIPES: readonly Recipe[] = [{
         '15g wholemeal flour',
         '40ml water at 30°C',
       ],
+      ingredientsCategory: IngredientsCategory.LEAVEN,
     },
     {
       id: 2,
@@ -41,11 +52,16 @@ export const RECIPES: readonly Recipe[] = [{
         '500g strong white flour',
         '400ml water at 30°C',
       ],
+      ingredientsCategory: IngredientsCategory.DOUGH,
     },
     {
       id: 3,
       title: 'Pinch in the salt',
       duration: exact(minutes(30)),
+      ingredients: [
+        '10g salt',
+      ],
+      ingredientsCategory: IngredientsCategory.DOUGH,
     },
     {
       id: 4,
@@ -98,10 +114,10 @@ export const RECIPES: readonly Recipe[] = [{
       ingredients: [
         // TODO: as structured quantities to allow adapting quantities
         '30g sourdough starter',
-        '15g strong white flour',
-        '15g wholemeal flour',
+        '30g spelt flour',
         '40ml water at 30°C',
       ],
+      ingredientsCategory: IngredientsCategory.LEAVEN,
     },
     {
       id: 2,
@@ -109,14 +125,19 @@ export const RECIPES: readonly Recipe[] = [{
       duration: exact(hours(1)),
       ingredients: [
         '100g leaven',
-        '500g strong white flour',
+        '500g spelt flour',
         '400ml water at 30°C',
       ],
+      ingredientsCategory: IngredientsCategory.DOUGH,
     },
     {
       id: 3,
       title: 'Pinch in the salt',
       duration: exact(minutes(30)),
+      ingredients: [
+        '10g salt',
+      ],
+      ingredientsCategory: IngredientsCategory.DOUGH,
     },
     {
       id: 4,
