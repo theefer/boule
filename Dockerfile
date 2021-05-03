@@ -2,7 +2,7 @@
 # Use the official lightweight Node.js 12 image.
 # https://hub.docker.com/_/node
 # FROM node:15-slim
-FROM node:15
+FROM node:16
 
 # Install Python (for building libsass).
 # RUN apt-get update || : && apt-get install python2 -y
